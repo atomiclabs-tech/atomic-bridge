@@ -42,4 +42,4 @@ jobs:
       - name: Prepare temporary signing key
         run: ATOMIC_SIGNING_DIR="$RUNNER_TEMP/signing" tools/ensure-signing-key.sh
       - name: Run Android unit tests
-        run: ATOMIC_SIGNING_DIR="$RUNNER_TEMP/signing" ./gradlew --no-daemon :app:testDebugUnitTest
+        run: TMPDIR="$RUNNER_TEMP" ATOMIC_SIGNING_DIR="$RUNNER_TEMP/signing" ./gradlew --no-daemon :app:testDebugUnitTest
