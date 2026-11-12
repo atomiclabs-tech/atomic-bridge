@@ -1,0 +1,49 @@
+name: atomic-bridge
+version: 2.3.0
+manifest_version: 2
+description: Control the dedicated phone through Atomic Bridge.
+author: Atomic Labs
+license: MIT
+kind: standalone
+provides_tools:
+  - android_ping
+  - android_read_screen
+  - android_find_nodes
+  - android_tap
+  - android_tap_text
+  - android_long_press
+  - android_type
+  - android_swipe
+  - android_drag
+  - android_open_app
+  - android_press_key
+  - android_screenshot
+  - android_scroll
+  - android_wait
+  - android_get_apps
+  - android_current_app
+  - android_media
+  - android_describe_node
+  - android_setup
+  - android_macro
+  - android_clipboard_read
+  - android_clipboard_write
+  - android_screen_hash
+  - android_diff_screen
+  - android_send_intent
+  - android_broadcast
+  - android_events
+  - android_event_stream
+  - android_location
+  - android_search_contacts
+  - android_call
+  - android_send_sms
+  - android_return_to_hermes
+  - android_share_media
+  - android_send_mms
+  - android_notifications_recent
+  - android_wait_notification
+  - android_list_files
+  - android_pull_file
+  - android_push_file
+  - android_call_audio_probe

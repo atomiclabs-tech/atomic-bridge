@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Workshop" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/ws_bg</item>
+        <item name="android:colorBackground">@color/ws_bg</item>
+        <item name="android:statusBarColor">@color/ws_bg</item>
+        <item name="android:navigationBarColor">@color/ws_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorAccent">@color/ws_brand_hi</item>
+        <item name="android:colorControlActivated">@color/ws_brand_hi</item>
+        <item name="android:textColorPrimary">@color/ws_fg1</item>
+        <item name="android:textColorSecondary">@color/ws_fg3</item>
+        <item name="android:textColorHighlight">#66C2412F</item>
+        <item name="android:fontFamily">@font/barlow_regular</item>
+    </style>
+    <style name="Ws" />
+    <style name="Ws.Body">
+        <item name="android:fontFamily">@font/barlow_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/ws_fg1</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+    <style name="Ws.Small" parent="Ws.Body">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/ws_fg3</item>
+    </style>
+    <style name="Ws.Display">
+        <item name="android:fontFamily">@font/barlow_condensed_semibold</item>
+        <item name="android:textColor">@color/ws_fg1</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="Ws.Heading" parent="Ws.Display">
+        <item name="android:textSize">22sp</item>
+    </style>
+    <style name="Ws.Label">
+        <item name="android:fontFamily">@font/plex_mono_medium</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/ws_fg4</item>
+    </style>
+    <style name="Ws.Mono">
+        <item name="android:fontFamily">@font/plex_mono_regular</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/ws_fg2</item>
+    </style>
+    <style name="Ws.Button" parent="android:Widget.DeviceDefault.Button.Borderless">
+        <item name="android:background">@drawable/ws_button</item>
+        <item name="android:fontFamily">@font/barlow_semibold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/ws_fg1</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+    <style name="Ws.Button.Small">
+        <item name="android:minHeight">36dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+    </style>
+    <style name="Ws.Button.Stop">
+        <item name="android:background">@drawable/ws_button_stop</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+</resources>

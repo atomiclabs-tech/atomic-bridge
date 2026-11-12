@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "sessions": [
+    {
+      "token": "synthetic-session-credential-for-fixture",
+      "device_name": "Synthetic phone",
+      "device_id": "synthetic-device",
+      "created_at": 1700000000.0,
+      "last_seen": 1700000001.0,
+      "expires_at": "never",
+      "grants": {"bridge": "never", "chat": "never", "terminal": "never", "tui": "never", "voice:config": "never", "voice:stt": "never", "voice:tts": "never", "voice:realtime": "never"},
+      "transport_hint": "wss",
+      "client_surface": "android",
+      "device_form_factor": "phone",
+      "device_model": "Synthetic model",
+      "device_platform": "Android synthetic",
+      "first_seen": 1700000000.0
+    }
+  ],
+  "trusted_devices": [
+    {
+      "refresh_token_hash": "synthetic-refresh-hash-not-a-real-credential",
+      "device_name": "Synthetic phone",
+      "device_id": "synthetic-device",
+      "created_at": 1700000000.0,
+      "last_used": 1700000001.0,
+      "expires_at": 4102444800.0,
+      "session_ttl_seconds": 0.0,
+      "transport_hint": "wss",
+      "client_surface": "android",
+      "device_form_factor": "phone",
+      "device_model": "Synthetic model",
+      "device_platform": "Android synthetic"
+    }
+  ]
+}

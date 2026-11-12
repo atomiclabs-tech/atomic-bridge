@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_check_title">Audio check</string>
+    <string name="audio_check_active">Measuring call audio</string>
+    <string name="audio_microphone_permission">Microphone</string>
+    <string name="audio_phone_state_permission">Phone state</string>
+    <string name="audio_microphone_rationale">Allow microphone access to measure call audio.</string>
+    <string name="audio_phone_state_rationale">Allow phone state access to report whether a call is active.</string>
+</resources>

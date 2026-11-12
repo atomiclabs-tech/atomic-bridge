@@ -1,0 +1,17 @@
+# APM runtime (not tracked)
+.apm/worktrees/
+.apm/bus/
+
+# Python bytecode
+__pycache__/
+mac/.venv/
+.env
+
+# Android build output and local signing material
+.signing/
+local.properties
+.gradle/
+.kotlin/
+build/
+app/build/
+*.apk

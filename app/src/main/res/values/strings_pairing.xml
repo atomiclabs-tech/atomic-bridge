@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pairing_code_label">Pairing code</string>
+    <string name="pairing_pair">Pair</string>
+    <string name="pairing_dialog_title">Pair with this relay?</string>
+    <string name="pairing_cancel">Cancel</string>
+    <string name="pairing_cleartext">Connection is not encrypted</string>
+    <string name="pairing_hint">Not paired. Run the pair command on your Mac and enter the code here, or open the link it shows.</string>
+</resources>

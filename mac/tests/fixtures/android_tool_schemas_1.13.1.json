@@ -1,0 +1,977 @@
+{
+  "android_ping": {
+    "name": "android_ping",
+    "description": "Check if the Android bridge is reachable. Call this first before any other android_ tools.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_read_screen": {
+    "name": "android_read_screen",
+    "description": "Get the accessibility tree of the current Android screen. Returns all visible UI nodes with text, class names, node IDs, and interactability. Use this to understand what's on screen before tapping.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "include_bounds": {
+          "type": "boolean",
+          "description": "Include pixel coordinates for each node. Default false.",
+          "default": false
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_find_nodes": {
+    "name": "android_find_nodes",
+    "description": "Targeted filtered search for accessibility nodes on the current Android screen. Prefer this over android_read_screen when you only need to check whether a specific element exists or find a small set of interactive widgets — it avoids dumping the full tree (which can be several KB). Filters are all optional and AND together: text (case-insensitive substring match against node text OR contentDescription), class_name (exact match), clickable (True/False). Returns up to `limit` matches in the same ScreenNode shape as android_read_screen, including node IDs you can feed into android_tap(node_id=...).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Case-insensitive substring to match against node text or contentDescription."
+        },
+        "class_name": {
+          "type": "string",
+          "description": "Exact Android class name to match, e.g. 'android.widget.Button'."
+        },
+        "clickable": {
+          "type": "boolean",
+          "description": "If set, only return nodes with matching isClickable flag."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Max number of matches to return (default 20, hard-capped at 512).",
+          "default": 20
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_tap": {
+    "name": "android_tap",
+    "description": "Tap a UI element by node_id (preferred) or by screen coordinates (x, y). Always prefer node_id over coordinates — it's more reliable. Get node_ids from android_read_screen.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "X coordinate in pixels"
+        },
+        "y": {
+          "type": "integer",
+          "description": "Y coordinate in pixels"
+        },
+        "node_id": {
+          "type": "string",
+          "description": "Accessibility node ID from android_read_screen"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_tap_text": {
+    "name": "android_tap_text",
+    "description": "Tap the first visible UI element matching the given text. Useful when you see text on screen and want to tap it without needing node IDs.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Text to find and tap"
+        },
+        "exact": {
+          "type": "boolean",
+          "description": "Exact match (true) or contains match (false, default)",
+          "default": false
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "text"
+      ]
+    }
+  },
+  "android_long_press": {
+    "name": "android_long_press",
+    "description": "Perform a long press at screen coordinates (x, y) or on an accessibility node_id. Prefer node_id when available — it's more reliable than coordinates. Use for context menus, text selection, widget rearranging, and hold-to-confirm UI. Duration defaults to 500 ms and is clamped to 100..3000 ms.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "X coordinate in pixels"
+        },
+        "y": {
+          "type": "integer",
+          "description": "Y coordinate in pixels"
+        },
+        "node_id": {
+          "type": "string",
+          "description": "Accessibility node ID from android_read_screen"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Hold duration in milliseconds (100..3000)",
+          "default": 500
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_type": {
+    "name": "android_type",
+    "description": "Type text into the currently focused input field. Tap the field first using android_tap or android_tap_text.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Text to type"
+        },
+        "clear_first": {
+          "type": "boolean",
+          "description": "Clear existing content before typing",
+          "default": false
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "text"
+      ]
+    }
+  },
+  "android_swipe": {
+    "name": "android_swipe",
+    "description": "Perform a swipe gesture on screen.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down",
+            "left",
+            "right"
+          ]
+        },
+        "distance": {
+          "type": "string",
+          "enum": [
+            "short",
+            "medium",
+            "long"
+          ],
+          "default": "medium"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "direction"
+      ]
+    }
+  },
+  "android_drag": {
+    "name": "android_drag",
+    "description": "Drag from (start_x, start_y) to (end_x, end_y) over a duration in milliseconds. Use for rearranging home screen icons, pulling the notification shade a precise distance, dragging map pins, or reordering list items — anything a coarse swipe can't express. Duration is clamped to 100–3000 ms.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start_x": {
+          "type": "integer",
+          "description": "Start X coordinate in pixels"
+        },
+        "start_y": {
+          "type": "integer",
+          "description": "Start Y coordinate in pixels"
+        },
+        "end_x": {
+          "type": "integer",
+          "description": "End X coordinate in pixels"
+        },
+        "end_y": {
+          "type": "integer",
+          "description": "End Y coordinate in pixels"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Gesture duration in milliseconds (100–3000, default 500)",
+          "default": 500
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "start_x",
+        "start_y",
+        "end_x",
+        "end_y"
+      ]
+    }
+  },
+  "android_open_app": {
+    "name": "android_open_app",
+    "description": "Launch an Android app by its package name. Use android_get_apps to find package names.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "type": "string",
+          "description": "App package name e.g. com.ubercab"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "package"
+      ]
+    }
+  },
+  "android_press_key": {
+    "name": "android_press_key",
+    "description": "Press a hardware or software key.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "enum": [
+            "back",
+            "home",
+            "recents",
+            "power",
+            "volume_up",
+            "volume_down",
+            "enter",
+            "delete",
+            "tab",
+            "escape",
+            "search",
+            "notifications"
+          ]
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  "android_screenshot": {
+    "name": "android_screenshot",
+    "description": "Take a screenshot of the current Android screen. Attaches a bounded image for visual inspection. Use when the accessibility tree is missing context or the screen uses canvas/game rendering.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "sensitive": {
+          "type": "boolean",
+          "description": "Set true if the screen may contain private or NSFW content (lock screen, 2FA code, banking app). The phone blurs the image per the user's setting. Defaults to false."
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_scroll": {
+    "name": "android_scroll",
+    "description": "Scroll the screen or a specific scrollable element.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down",
+            "left",
+            "right"
+          ]
+        },
+        "node_id": {
+          "type": "string",
+          "description": "Node ID of scrollable container (optional, defaults to screen scroll)"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "direction"
+      ]
+    }
+  },
+  "android_wait": {
+    "name": "android_wait",
+    "description": "Wait for a UI element to appear on screen. Use after actions that trigger loading or navigation.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Wait for element with this text"
+        },
+        "class_name": {
+          "type": "string",
+          "description": "Wait for element of this class"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "description": "Max wait time in milliseconds",
+          "default": 5000
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_get_apps": {
+    "name": "android_get_apps",
+    "description": "List all installed apps on the Android device with their package names and display labels.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_current_app": {
+    "name": "android_current_app",
+    "description": "Get the package name and activity name of the currently active (foreground) Android app.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_media": {
+    "name": "android_media",
+    "description": "Control system-wide media playback (play/pause/toggle/next/previous). Works against whatever media app is currently playing — Spotify, YouTube Music, Pocket Casts, etc. — via the system media-button broadcast.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "play",
+            "pause",
+            "toggle",
+            "next",
+            "previous"
+          ],
+          "description": "Playback action to dispatch"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    }
+  },
+  "android_describe_node": {
+    "name": "android_describe_node",
+    "description": "Return the full property bag for a specific accessibility node by ID. Use this after android_read_screen when you need richer details about one node than the compact tree provides — e.g. 'is this toggle checked?', 'what hint text does this input show?', or 'is this button clickable?'. Returns bounds, className, text, contentDescription, hintText, viewIdResourceName, childCount, and state flags (clickable, checkable, checked, enabled, etc). `checked` is null when the node isn't a toggle.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "description": "Stable node ID from android_read_screen (e.g. 'w0:42')"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "node_id"
+      ]
+    }
+  },
+  "android_setup": {
+    "name": "android_setup",
+    "description": "FALLBACK — teach this host's android_* tools about a bridge session token you already have. This is NOT the pairing flow: to pair a phone for the first time use `hermes-pair` or the /hermes-relay-pair slash command (QR scan). Writes ANDROID_BRIDGE_TOKEN/ANDROID_BRIDGE_URL to ~/.hermes/.env and verifies the relay is reachable.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "bridge_session_token": {
+          "type": "string",
+          "description": "Long-lived bridge session token from a previous successful pair (not a 6-character pairing code)."
+        },
+        "pairing_code": {
+          "type": "string",
+          "description": "Deprecated alias for bridge_session_token, accepted for backwards compatibility. Prefer bridge_session_token."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_macro": {
+    "name": "android_macro",
+    "description": "Execute a batched workflow of android_* tool calls in order, stopping on the first failure. Use this for KNOWN workflows where the steps are deterministic (e.g. 'open Spotify, tap Search, type X, tap first result, tap Play'). For unknown workflows that need vision to decide what to do next, use `android_navigate` instead. If a step might need vision to decide the next action, don't batch past that point — split into two macros with a read_screen or navigate call between them. Returns a structured trace with per-step results, the completed count, and an error field on failure.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "description": "Ordered list of step dicts. Each step must have a 'tool' key (one of the android_* tool names) and may have an 'args' key (kwargs for that tool). Example: [{\"tool\": \"android_tap\", \"args\": {\"x\": 100, \"y\": 200}}, {\"tool\": \"android_type\", \"args\": {\"text\": \"hello\"}}]",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "description": "android_* tool name"
+              },
+              "args": {
+                "type": "object",
+                "description": "kwargs for the tool (optional)"
+              }
+            },
+            "required": [
+              "tool"
+            ]
+          }
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable label for the macro (for logs/traces).",
+          "default": "unnamed"
+        },
+        "pace_ms": {
+          "type": "integer",
+          "description": "Milliseconds to sleep between steps. 0 disables pacing.",
+          "default": 500
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "steps"
+      ]
+    }
+  },
+  "android_clipboard_read": {
+    "name": "android_clipboard_read",
+    "description": "Read the Android system clipboard as plain text. Returns {\"text\": \"...\"} on success; an empty string means nothing is currently copied (empty is NOT an error). Note: on Android 12+ (API 31+) reading the clipboard shows a system toast 'Hermes-Relay pasted from your clipboard' — this is a system-level privacy feature and cannot be suppressed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_clipboard_write": {
+    "name": "android_clipboard_write",
+    "description": "Write a plain-text value to the Android system clipboard. Empty strings are allowed (they effectively clear the clipboard). The clip is labeled 'hermes' so other apps can see the source. Note: on Android 12+ (API 31+) writing to the clipboard shows a system toast 'Hermes-Relay copied' — this is a system-level privacy feature and cannot be suppressed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Text to copy to the clipboard"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "text"
+      ]
+    }
+  },
+  "android_screen_hash": {
+    "name": "android_screen_hash",
+    "description": "Return a cheap SHA-256 fingerprint of the current Android screen, computed from the accessibility tree. Deterministic across unchanged screens — use for fast change detection in navigation loops (~100x cheaper than android_read_screen). Returns {hash, node_count, truncated}. Known limitation: live counters and animated text will churn the hash.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_diff_screen": {
+    "name": "android_diff_screen",
+    "description": "Compare the current Android screen to a previous hash and report whether anything changed. Returns {changed, hash, node_count, truncated} in one call so the agent can update its reference without a second round-trip. Use after a tap/swipe to confirm something actually happened.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "previous_hash": {
+          "type": "string",
+          "description": "Prior hash from android_screen_hash."
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "previous_hash"
+      ]
+    }
+  },
+  "android_send_intent": {
+    "name": "android_send_intent",
+    "description": "Power-user escape hatch — launch an arbitrary Android Activity via a raw Intent. Useful for Maps directions (google.navigation:q=...), dialer (tel:), SMS composer (smsto:), mail (mailto:), and custom deep links. The phone adds FLAG_ACTIVITY_NEW_TASK automatically. Extras are string-only in v1 — stringify non-string values. The target 'package' must NOT be on the Bridge safety blocklist (banking/passwords/2FA by default) or the phone returns 403.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Android action string, e.g. 'android.intent.action.VIEW'"
+        },
+        "data": {
+          "type": "string",
+          "description": "Optional data URI for the Intent"
+        },
+        "package": {
+          "type": "string",
+          "description": "Optional target package — forces the Intent to a specific app"
+        },
+        "component": {
+          "type": "string",
+          "description": "Optional fully-qualified component 'pkg/classname'"
+        },
+        "extras": {
+          "type": "object",
+          "description": "Optional string-keyed/string-valued Intent extras",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string",
+          "description": "Optional Intent category (e.g. 'android.intent.category.LAUNCHER')"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    }
+  },
+  "android_broadcast": {
+    "name": "android_broadcast",
+    "description": "Power-user escape hatch — send an arbitrary broadcast Intent on the phone via Context.sendBroadcast. Extras are string-only in v1. The target 'package' must NOT be on the Bridge safety blocklist or the phone returns 403. System broadcasts that require platform-signed apps will be refused with 'permission denied'.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Android action string (required)"
+        },
+        "data": {
+          "type": "string",
+          "description": "Optional data URI"
+        },
+        "package": {
+          "type": "string",
+          "description": "Optional target package — scopes the broadcast to a single app"
+        },
+        "extras": {
+          "type": "object",
+          "description": "Optional string-keyed/string-valued Intent extras",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    }
+  },
+  "android_events": {
+    "name": "android_events",
+    "description": "Poll the phone's recent AccessibilityEvent ring buffer (clicks, text changes, window transitions, scrolls). Use this for reactive agent scenarios — 'tell me when the user opens Slack', 'watch for the next message typed into the search box', 'what's happening on the phone right now?'. Capture is OFF by default — you must call android_event_stream(enabled=true) first. The buffer is bounded at 500 entries and throttled to one entry per (event_type, package) per 100ms so scroll storms don't flood the stream. Privacy-sensitive — event streams can leak search queries, messages, and passwords typed into input fields. Default is disabled. User must explicitly enable via android_event_stream(true). Clears automatically on disable.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Max entries to return (1-500, default 50)",
+          "default": 50
+        },
+        "since": {
+          "type": "integer",
+          "description": "Only return entries with timestamp > this epoch millisecond value. Use the timestamp of the last entry you saw to poll incrementally. Default 0 (return everything in the buffer).",
+          "default": 0
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_event_stream": {
+    "name": "android_event_stream",
+    "description": "Toggle AccessibilityEvent capture on the phone. Pass enabled=true to start recording clicks, text changes, window transitions, and scrolls into a bounded ring buffer that android_events then polls. Pass enabled=false to stop and wipe the buffer. Privacy-sensitive — event streams can leak search queries, messages, and passwords typed into input fields. Default is disabled. User must explicitly enable via android_event_stream(true). Clears automatically on disable. Use only when the user has asked for reactive monitoring and be explicit in chat about what you're turning on.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "true = start capture, false = stop + clear buffer"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    }
+  },
+  "android_location": {
+    "name": "android_location",
+    "description": "Sideload flavor only. Returns the phone's last-known GPS location (latitude, longitude, accuracy, altitude, provider, timestamp, staleness_ms). On googlePlay builds returns a 'sideload-only' error. If staleness_ms exceeds 5 minutes a warning field is included — the agent should ask the user to open a maps app briefly to refresh the fix.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_search_contacts": {
+    "name": "android_search_contacts",
+    "description": "Sideload flavor only. Search the phone's contact database by name and return matching entries with phone numbers. On googlePlay builds returns a 'sideload-only' error. Use this to resolve a name to a number before calling android_call or android_send_sms.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Contact name or fragment to search for"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results (default 20, max 100)",
+          "default": 20
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  "android_call": {
+    "name": "android_call",
+    "description": "Dial a phone number. Sideload flavor auto-dials via ACTION_CALL. googlePlay flavor falls back to opening the system dialer pre-populated (user taps Call manually). The phone's safety-rails ALWAYS show a destructive-verb confirmation modal before the call is placed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "string",
+          "description": "Phone number to dial (any user-readable format)"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "number"
+      ]
+    }
+  },
+  "android_send_sms": {
+    "name": "android_send_sms",
+    "description": "Sideload flavor only. Send an SMS directly via SmsManager. On googlePlay builds returns a 'sideload-only' error (SEND_SMS is not declared on the Play Store track). Handles multi-part messages automatically via divideMessage. The phone's safety-rails ALWAYS show a destructive-verb confirmation modal before the SMS is sent. Text-only schema: {to, body}. For images, documents, audio, video, or other attachments use android_share_media or android_send_mms.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "Recipient phone number (E.164 or local format)"
+        },
+        "body": {
+          "type": "string",
+          "description": "SMS body text"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "to",
+        "body"
+      ]
+    }
+  },
+  "android_return_to_hermes": {
+    "name": "android_return_to_hermes",
+    "description": "Bring the Hermes Relay app back to the foreground after a bridge task opens another app. Use this as the cleanup step after open_app, send_intent, share_media, or send_mms flows.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_share_media": {
+    "name": "android_share_media",
+    "description": "Share text and/or relay-host files through Android's native ACTION_SEND/ACTION_SEND_MULTIPLE flow. Accepts host-local paths, relay MEDIA markers, raw media tokens, or an attachments array. Host paths are registered with the relay first, then the phone fetches the bytes with its paired session token and hands third-party apps a FileProvider content:// URI. The phone shows an on-device confirmation modal before launching the share UI. Use this for files, images, audio, video, PDFs, and arbitrary attachments.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Host-local file path to share"
+        },
+        "paths": {
+          "type": "array",
+          "description": "Multiple host-local file paths to share",
+          "items": {
+            "type": "string"
+          }
+        },
+        "media": {
+          "type": "string",
+          "description": "Relay MEDIA marker or raw media token to share"
+        },
+        "media_token": {
+          "type": "string",
+          "description": "Raw relay media token"
+        },
+        "media_tokens": {
+          "type": "array",
+          "description": "Multiple raw relay media tokens",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Attachment objects with one of path, media, token, or media_token plus optional content_type and file_name",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "media": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string"
+              },
+              "media_token": {
+                "type": "string"
+              },
+              "content_type": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "content_type": {
+          "type": "string",
+          "description": "Optional MIME type hint for a single path/media value"
+        },
+        "file_name": {
+          "type": "string",
+          "description": "Optional filename hint for a single path/media value"
+        },
+        "text": {
+          "type": "string",
+          "description": "Optional text to share with attachments"
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional Android chooser title"
+        },
+        "package": {
+          "type": "string",
+          "description": "Optional target package to launch directly instead of the chooser"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": []
+    }
+  },
+  "android_send_mms": {
+    "name": "android_send_mms",
+    "description": "Open a user-mediated MMS compose/share handoff with text and/or attachments. Android only allows true background MMS sending for the default SMS app, so Hermes does not silently send MMS. Instead, the phone fetches relay media, grants FileProvider content:// access, pre-fills recipient/text when the target app supports it, and launches the native compose/share UI after on-device confirmation.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "Recipient phone number"
+        },
+        "body": {
+          "type": "string",
+          "description": "Optional message body"
+        },
+        "path": {
+          "type": "string",
+          "description": "Host-local file path to attach"
+        },
+        "paths": {
+          "type": "array",
+          "description": "Multiple host-local file paths to attach",
+          "items": {
+            "type": "string"
+          }
+        },
+        "media": {
+          "type": "string",
+          "description": "Relay MEDIA marker or raw media token"
+        },
+        "media_token": {
+          "type": "string",
+          "description": "Raw relay media token"
+        },
+        "media_tokens": {
+          "type": "array",
+          "description": "Multiple raw relay media tokens",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Attachment objects with one of path, media, token, or media_token plus optional content_type and file_name",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "media": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string"
+              },
+              "media_token": {
+                "type": "string"
+              },
+              "content_type": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "content_type": {
+          "type": "string",
+          "description": "Optional MIME type hint for a single path/media value"
+        },
+        "file_name": {
+          "type": "string",
+          "description": "Optional filename hint for a single path/media value"
+        },
+        "package": {
+          "type": "string",
+          "description": "Optional SMS/MMS app package to launch directly"
+        },
+        "device": {
+          "type": "string",
+          "description": "Optional Android device selector for multi-device relays. Accepts a device_id or alias such as phone, pixel, fold, boox, note, notemax, or tablet. Omit to use the relay's active/default device."
+        }
+      },
+      "required": [
+        "to"
+      ]
+    }
+  }
+}

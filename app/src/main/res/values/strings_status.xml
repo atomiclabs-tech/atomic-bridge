@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_relay_url">Relay address</string>
+    <string name="status_endpoint">Relay: %1$s</string>
+    <string name="status_eyebrow">Atomic Labs · phone link</string>
+    <string name="status_link_label">Link</string>
+    <string name="status_setup_label">Setup</string>
+    <string name="tone_online">Online</string>
+    <string name="tone_working">Connecting</string>
+    <string name="tone_needs_you">Needs you</string>
+    <string name="tone_off">Off</string>
+    <string name="status_killed_detail">You turned the link off. Screen control is off too.</string>
+    <string name="status_save">Save</string>
+    <string name="status_kill">Kill link</string>
+    <string name="status_turn_on">Turn link back on</string>
+    <string name="status_killed_toast">The link is off. Open the app to turn it back on.</string>
+    <string name="status_connect">Connect</string>
+    <string name="status_retry">Retry</string>
+    <string name="status_re_pair">Re-pair</string>
+    <string name="status_device_id">Device id: %1$s</string>
+    <string name="status_grant">Grant expiry: %1$s</string>
+    <string name="status_version">Atomic Labs · version %1$s</string>
+    <string name="status_permissions">Permissions</string>
+    <string name="status_notifications_optional_hint">Notifications are optional. Leaving them denied hides the notification.</string>
+    <string name="status_accessibility">Accessibility service</string>
+    <string name="status_restricted_settings">Restricted settings</string>
+    <string name="status_restricted_allowed">Restricted settings: allowed</string>
+    <string name="status_restricted_blocked">Restricted settings: blocked</string>
+    <string name="status_restricted_unknown">Restricted settings: unknown. Check App info.</string>
+    <string name="status_restricted_guidance">For a sideloaded app, Android may require this before accessibility stays enabled after a restart. Open App info for %1$s → menu → Allow restricted settings, if offered. Then return here, open Accessibility settings below, and enable or re-enable %1$s. An enabled accessibility service alone does not confirm this prerequisite.</string>
+    <string name="status_open_app_info">Open App info</string>
+    <string name="status_battery">Battery optimisation exemption</string>
+    <string name="status_unused">Pause app activity if unused: off</string>
+    <string name="status_notifications">Notifications (optional)</string>
+    <string name="status_sms">SMS</string>
+    <string name="status_phone">Phone</string>
+    <string name="status_contacts">Contacts</string>
+    <string name="status_location">Location</string>
+    <string name="status_background_location">Background location (Allow all the time)</string>
+    <string name="status_open_settings">Open settings</string>
+    <string name="status_grant_permission">Grant</string>
+    <string name="status_granted">Granted</string>
+    <string name="status_missing">Missing</string>
+    <string name="status_unknown">Checking</string>
+</resources>

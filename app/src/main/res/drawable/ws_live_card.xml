@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Corner brackets mark a live surface (Design Guide v3). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ws_card" android:left="7dp" android:top="7dp" android:right="7dp" android:bottom="7dp" />
+    <item android:drawable="@drawable/ws_bracket_tl" android:gravity="top|start" android:width="14dp" android:height="14dp" />
+    <item android:drawable="@drawable/ws_bracket_tr" android:gravity="top|end" android:width="14dp" android:height="14dp" />
+    <item android:drawable="@drawable/ws_bracket_bl" android:gravity="bottom|start" android:width="14dp" android:height="14dp" />
+    <item android:drawable="@drawable/ws_bracket_br" android:gravity="bottom|end" android:width="14dp" android:height="14dp" />
+</layer-list>

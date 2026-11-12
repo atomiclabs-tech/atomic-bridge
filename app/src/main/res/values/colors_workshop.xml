@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Atomic Labs Design Guide v3, Workshop (dark) room. Status colours only ever mean status. -->
+<resources>
+    <color name="ws_bg">#0D0B0C</color>
+    <color name="ws_surface">#1B1517</color>
+    <color name="ws_surface2">#241C1E</color>
+    <color name="ws_line">#2E2527</color>
+    <color name="ws_line_strong">#44383A</color>
+    <color name="ws_fg1">#F3E7DC</color>
+    <color name="ws_fg2">#D6C6B9</color>
+    <color name="ws_fg3">#A8978A</color>
+    <color name="ws_fg4">#8C7D72</color>
+    <color name="ws_fg5">#5A4C44</color>
+    <color name="ws_primary">#C2412F</color>
+    <color name="ws_brand_hi">#EF6A4F</color>
+    <!-- Status LEDs follow traffic-light convention: go = green, in between = amber, stop = red. -->
+    <color name="ws_go">#5FC46B</color>
+    <color name="ws_amber">#FFB547</color>
+    <color name="ws_alert">#FF4A3A</color>
+    <color name="ws_stop_fill">#C2412F</color>
+    <color name="ws_stop_pressed">#A8321F</color>
+</resources>

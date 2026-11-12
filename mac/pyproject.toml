@@ -1,0 +1,12 @@
+[project]
+name = "atomic-bridge-mac"
+version = "2.3.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["aiohttp==3.14.3"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "pytest-xdist==3.8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p aiohttp.pytest_plugin"

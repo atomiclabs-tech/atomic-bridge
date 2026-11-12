@@ -1,0 +1,124 @@
+MIT License
+
+Copyright (c) 2026 Axiom Labs
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Reused and adapted files
+=======================
+
+The upstream MIT notice above is reproduced without modification. The following
+Atomic destination files reuse Hermes-Relay source pinned to commit `da782a8`.
+Paths in the right column are relative to the upstream repository; paths in the
+left column are relative to this repository. Splitting a source into several
+files does not remove its upstream attribution.
+
+| Atomic destination | Upstream source at `da782a8` |
+| --- | --- |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/events/EventBuffer.kt` | `app/src/main/kotlin/com/hermesandroid/relay/event/EventStore.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/KeyCommands.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/ScrollCommand.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/SwipeGeometry.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/TapCommands.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/TextEntry.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/WaitCommand.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/AppRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt`, `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/AttachmentSpec.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/CallSmsRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/ClipboardRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/ContactsRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/LocationRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/MediaKeyRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/phone/ShareRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/protocol/Envelope.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/models/Envelope.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/NodeDescriber.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/NodeFilter.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/NodeLookup.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/NodeSearch.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/ScreenHasher.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenHasher.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/ScreenModels.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/ScreenRoutes.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/ScreenTreeWalker.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/screen/WindowOrder.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenReader.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/access/AccessibilityGlobalKeys.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/access/EventFeed.kt` | `app/src/main/kotlin/com/hermesandroid/relay/event/EventStore.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/access/GestureDispatcher.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidAppControl.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt`, `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidCallControl.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidClipboard.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidContactsSource.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidLocationSource.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidMediaKeys.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidShareLauncher.kt` | `app/src/main/kotlin/com/hermesandroid/relay/network/relay/BridgeCommandHandler.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/AndroidSmsSender.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/phone/OutboundFileStore.kt` | `app/src/main/kotlin/com/hermesandroid/relay/util/MediaCacheWriter.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/device/power/AndroidPowerState.kt` | `app/src/main/kotlin/com/hermesandroid/relay/bridge/UnattendedAccessManager.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/net/RelayMediaClient.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ScreenCapture.kt` |
+| `mac/atomic_bridge/attachments.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/checks.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/client.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/registry.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/resolve_result.py` | `plugin/tools/resolve_result.py` |
+| `mac/atomic_bridge/result.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/schemas_apps.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/schemas_input.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/schemas_phone.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/schemas_screen.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/schemas_setup.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/screenshot_media.py` | `plugin/tools/android_screenshot_media.py` |
+| `mac/atomic_bridge/tool_support.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/tools_apps.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/tools_input.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/tools_notifications.py` | `plugin/tools/android_notifications.py` |
+| `mac/atomic_bridge/tools_phone.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/tools_screen.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_bridge/tools_setup.py` | `plugin/tools/android_tool.py` |
+| `mac/atomic_relay/bridge/dispatch.py` | `plugin/relay/channels/bridge.py` |
+| `mac/atomic_relay/bridge/registry.py` | `plugin/relay/channels/bridge.py` |
+| `mac/atomic_relay/bridge/status.py` | `plugin/relay/channels/bridge.py` |
+| `mac/atomic_relay/cli_remote.py` | `plugin/pair.py`, `plugin/status.py` |
+| `mac/atomic_relay/media/files.py` | `plugin/relay/media.py`, `plugin/relay/server.py` |
+| `mac/atomic_relay/media/paths.py` | `plugin/relay/media.py` |
+| `mac/atomic_relay/media/registry.py` | `plugin/relay/media.py` |
+| `mac/atomic_relay/notifications/buffer.py` | `plugin/relay/channels/notifications.py` |
+| `mac/atomic_relay/notifications/waiters.py` | `plugin/relay/channels/notifications.py` |
+| `mac/atomic_relay/sessions/authentication.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/sessions/grants.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/sessions/manager.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/sessions/models.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/sessions/pairing.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/sessions/ratelimit.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/sessions/store.py` | `plugin/relay/auth.py` |
+| `mac/atomic_relay/web/media_authorization.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/media_upload.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/routes_bridge.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/routes_media.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/routes_notifications.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/routes_pairing.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/routes_sessions.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/ws.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/ws_auth.py` | `plugin/relay/server.py` |
+| `mac/atomic_relay/web/ws_channels.py` | `plugin/relay/server.py` |
+| `mac/tests/fixtures/extract_upstream_schemas.py` | `plugin/tools/android_tool.py` |
+| `mac/tests/fixtures/android_tool_schemas_1.13.1.json` | `plugin/tools/android_tool.py` (35 schema declarations and device-selector metadata, extracted by `mac/tests/fixtures/extract_upstream_schemas.py`) |
+
+The extractor is listed because it identifies and reproduces the pinned schema
+literals; the generated JSON fixture carries that upstream material even though
+JSON has no comment header. Newly authored Atomic files are not attributed as
+upstream ports solely because they implement the same protocol.

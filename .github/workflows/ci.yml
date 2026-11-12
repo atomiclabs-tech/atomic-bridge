@@ -1,0 +1,41 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  mac-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python test dependencies
+        run: pip install "aiohttp==3.14.3" "pytest==9.1.1" "pytest-xdist==3.8.0"
+      - name: Run Mac-side tests
+        run: cd mac && python -m pytest -q tests
+
+  android-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK components
+        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+      - name: Prepare temporary signing key
+        run: ATOMIC_SIGNING_DIR="$RUNNER_TEMP/signing" tools/ensure-signing-key.sh
+      - name: Run Android unit tests
+        run: ATOMIC_SIGNING_DIR="$RUNNER_TEMP/signing" ./gradlew --no-daemon :app:testDebugUnitTest
