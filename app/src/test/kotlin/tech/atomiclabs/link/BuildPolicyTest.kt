@@ -19,7 +19,7 @@ class BuildPolicyTest {
 
     @Test fun packageAndVersionNameStayTheSameForEveryBuildType() {
         assertTrue(Regex("""applicationId\s*=\s*"tech\.atomiclabs\.link"""").containsMatchIn(source))
-        assertTrue(Regex("""versionName\s*=\s*"1\.0\.0"""").containsMatchIn(source))
+        assertTrue(Regex("""versionName\s*=\s*"1\.0\.1"""").containsMatchIn(source))
         assertFalse(Regex("""\b(applicationIdSuffix|versionNameSuffix)\b""").containsMatchIn(source))
     }
 
@@ -27,8 +27,8 @@ class BuildPolicyTest {
         assertNonDebuggable(source)
     }
 
-    @Test fun versionCodeReadsTheDocumentedPropertyWithDefaultEight() {
-        assertTrue(Regex("""providers\.gradleProperty\("atomic\.versionCode"\)\s*\.orElse\("8"\)""").containsMatchIn(source))
+    @Test fun versionCodeReadsTheDocumentedPropertyWithDefaultTen() {
+        assertTrue(Regex("""providers\.gradleProperty\("atomic\.versionCode"\)\s*\.orElse\("10"\)""").containsMatchIn(source))
     }
 
     @Test fun fullAndLauncherLabelsHaveSeparateBuildTimeDefaults() {

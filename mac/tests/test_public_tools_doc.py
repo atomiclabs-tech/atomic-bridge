@@ -15,7 +15,7 @@ DOCUMENT = ROOT / "docs/TOOLS.md"
 def assert_inventory(text):
     names = Counter(re.findall(r"\bandroid_[a-z0-9_]+\b", text))
     expected = {entry.name for entry in TOOL_ENTRIES}
-    assert len(expected) == 41
+    assert len(expected) == 42
     assert set(names) == expected, "Public tools page differs from the registry"
     assert all(count == 1 for count in names.values()), "Public tools page repeats a tool"
 

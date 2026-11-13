@@ -1,14 +1,83 @@
 # no_parallel: opens a loopback test server on port 0.
 import json
 import logging
+import secrets
+import string
 
 import pytest
 
+import atomic_bridge
 from atomic_bridge import tools_input
 from atomic_bridge.client import RelayClient
 from atomic_bridge.tool_support import ToolInputError
-from fake_relay import admin_environment, FakeRelay
+from fake_relay import admin_environment, FakeRelay, FakeResponse
+from recording_ctx import RecordingContext
 from tool_cases import CASES, assert_wire_case, install_client
+
+
+@pytest.mark.parametrize("device", [False, True])
+def test_unlock_registered_handler_uses_admin_post_without_pin(monkeypatch, device):
+    ctx = RecordingContext()
+    atomic_bridge.register(ctx)
+    tool = next((entry for entry in ctx.tools if entry["name"] == "android_unlock"), None)
+    assert tool is not None, "android_unlock is not registered"
+    result = {"success": True, "unlocked": True}
+    args = {"device": "synthetic-device"} if device else {}
+    with FakeRelay(lambda request: FakeResponse(value=result)) as relay:
+        monkeypatch.setenv("ANDROID_BRIDGE_URL", relay.url)
+        actual = tool["handler"](args, session_id="synthetic", task_id="synthetic")
+        assert isinstance(actual, str) and json.loads(actual) == result
+        assert len(relay.requests) == 1 and relay.rejected == 0
+        request = relay.requests[0]
+        assert (request["method"], request["path"]) == ("POST", "/unlock")
+        assert request["body"] == args and request["query"] == {}
+        authorized = request["headers"].get("Authorization") == "Bearer " + relay.expected_secret
+        assert authorized, "Admin bearer did not match (credential redacted)"
+
+
+@pytest.mark.parametrize("kind", ["generated", "null", "empty"])
+def test_unlock_rejects_any_pin_argument_without_http(monkeypatch, kind, caplog):
+    pin = "".join(secrets.choice(string.digits) for _ in range(12))
+    value = {"generated": pin, "null": None, "empty": ""}[kind]
+    args = {"pin": value, "device": "synthetic-device"}
+    message = "pin is not accepted; configure ATOMIC_RELAY_UNLOCK_PIN_FILE on the relay"
+    with FakeRelay() as relay:
+        monkeypatch.setenv("ANDROID_BRIDGE_URL", relay.url)
+        with pytest.raises(ToolInputError) as refused:
+            tools_input.android_unlock.__wrapped__(args)
+        matched = str(refused.value) == message
+        assert matched, "Unexpected refusal (contents redacted)"
+        actual = tools_input.android_unlock(args, session_id="synthetic")
+        matched = isinstance(actual, str) and json.loads(actual) == {"error": message}
+        assert matched, "Unexpected refusal envelope (contents redacted)"
+        sent = bool(relay.requests)
+        assert not sent, "A refused PIN argument reached HTTP"
+    leaked = pin in caplog.text + actual
+    assert not leaked, "PIN appeared in diagnostics (contents redacted)"
+
+
+def test_unlock_reports_relay_refusal_with_existing_http_envelope(monkeypatch):
+    with FakeRelay(lambda request: FakeResponse(status=503, value={"error": "unlock PIN not configured"})) as relay:
+        monkeypatch.setenv("ANDROID_BRIDGE_URL", relay.url)
+        actual = json.loads(tools_input.android_unlock({}))
+        assert actual == {"error": "HTTP 503: unlock PIN not configured", "status": 503}
+        assert len(relay.requests) == 1
+
+
+@pytest.mark.parametrize("result", [
+    {"success": True, "unlocked": True},
+    {"success": True, "unlocked": True, "already_unlocked": True},
+    {"success": False, "code": "keyguard_blocked", "error": "PIN not accepted.",
+     "stage": "pin_not_accepted", "pin_attempt_used": True},
+    {"success": False, "code": "wake_failed", "error": "The screen did not wake.",
+     "stage": "wake", "pin_attempt_used": False},
+])
+def test_unlock_preserves_phone_success_and_failure_fields(monkeypatch, result):
+    with FakeRelay(lambda request: FakeResponse(value=result)) as relay:
+        monkeypatch.setenv("ANDROID_BRIDGE_URL", relay.url)
+        actual = tools_input.android_unlock({})
+        assert isinstance(actual, str) and json.loads(actual) == result
+        assert len(relay.requests) == 1
 
 
 @pytest.mark.parametrize("device", [False, True])

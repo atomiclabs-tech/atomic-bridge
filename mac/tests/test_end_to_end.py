@@ -29,7 +29,7 @@ def test_public_health_reports_220_and_exact_public_fields(tmp_path, monkeypatch
             value = await response.json()
             assert response.status == 200
             assert set(value) == {"status", "version", "uptime_seconds"}
-            assert value["status"] == "ok" and value["version"] == "2.3.0"
+            assert value["status"] == "ok" and value["version"] == "2.4.0"
     asyncio.run(check())
 
 

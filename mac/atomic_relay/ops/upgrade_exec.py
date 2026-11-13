@@ -165,10 +165,10 @@ class Upgrade:
             self.emit("Watcher edit and rollback: mac/README.md (Operator, after the gateway restart).")
             self.emit("APK steps (Operator): build and keep the higher-version rollback APK; check both APKs and certificates; "
                       "install release over the paired app; verify pairing, self-heal, reboot and private cleartext.")
-            self.emit("Rollback APK: tools/build-rollback-apk.sh b4dfab2 9; "
-                      "tools/check-release-apk.sh build/rollback/Atomic-rollback-b4dfab2-9.apk --version-code 9 --debuggable")
+            self.emit("Rollback APK: tools/build-rollback-apk.sh 6a8a6b7 11; "
+                      "tools/check-release-apk.sh build/rollback/Atomic-rollback-6a8a6b7-11.apk --version-code 11 --debuggable")
             self.emit("Release APK: tools/build.sh :app:assembleRelease; "
-                      "tools/check-release-apk.sh app/build/outputs/apk/release/app-release.apk --version-code 8; compare signing certificates before install.")
+                      "tools/check-release-apk.sh app/build/outputs/apk/release/app-release.apk --version-code 10; compare signing certificates before install.")
 
     def _env(self):
         path = self.layout.service / "relay.env"

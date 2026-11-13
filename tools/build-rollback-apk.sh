@@ -6,7 +6,7 @@ set -euo pipefail
 
 fail() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 [[ $# -ge 1 && $# -le 2 ]] || fail 'Usage: build-rollback-apk.sh <commit> [versionCode]'
-version_code="${2-9}"
+version_code="${2-11}"
 [[ "$version_code" =~ ^[0-9]+$ ]] || fail 'versionCode must be an integer.'
 command -v git >/dev/null || fail 'git is required.'
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

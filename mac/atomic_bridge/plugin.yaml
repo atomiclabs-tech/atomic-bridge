@@ -1,5 +1,5 @@
 name: atomic-bridge
-version: 2.3.0
+version: 2.4.0
 manifest_version: 2
 description: Control the dedicated phone through Atomic Bridge.
 author: Atomic Labs
@@ -47,3 +47,4 @@ provides_tools:
   - android_pull_file
   - android_push_file
   - android_call_audio_probe
+  - android_unlock

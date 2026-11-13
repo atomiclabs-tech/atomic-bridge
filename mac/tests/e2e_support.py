@@ -33,7 +33,7 @@ class Loopback:
         ctx = RecordingContext()
         register(ctx)
         self.handlers = {tool["name"]: tool["handler"] for tool in ctx.tools}
-        assert len(ctx.tools) == len(self.handlers) == 41
+        assert len(ctx.tools) == len(self.handlers) == 42
 
     async def connect(self, **kwargs):
         return await FakePhone.connect(self.client, session_payload(self.session), **kwargs)

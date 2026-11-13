@@ -31,6 +31,7 @@ import tech.atomiclabs.link.core.port.*
 import tech.atomiclabs.link.core.power.DisplayWaker
 import tech.atomiclabs.link.core.screen.*
 import tech.atomiclabs.link.core.status.StatusReporter
+import tech.atomiclabs.link.core.unlock.UnlockRoutes
 import tech.atomiclabs.link.core.setup.StatusPresenter
 import tech.atomiclabs.link.device.access.*
 import tech.atomiclabs.link.device.capture.*
@@ -94,6 +95,8 @@ class LinkRuntime(
         val notifications: NotificationSource,
         val files: FileAccess,
         val probe: AudioProbe,
+        val isKilled: () -> Boolean,
+        val keyguard: KeyguardState,
         val serviceAvailability: (Service?) -> Unit,
         val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
         val newId: () -> String = { UUID.randomUUID().toString() },
@@ -127,6 +130,8 @@ class LinkRuntime(
             ScrollCommand(windows, lookup, geometry, inputs.gestures, logger),
             KeyCommands(inputs.globals, inputs.volume, inputs.power, textEntry, inputs.clock),
             WaitCommand(windows, walker, inputs.clock), inputs.gestures, logger),
+        UnlockRoutes(inputs.keyguard, inputs.power, inputs.gestures, inputs.metrics, windows, walker,
+            inputs.clock, logger, NodeClick(inputs.gestures), inputs.events),
         EventRoutes(inputs.events),
         AppRoutes(inputs.apps, logger, inputs.tree, windows, inputs.clock, inputs.foregroundEvents), ClipboardRoutes(inputs.clipboard, logger),
         MediaKeyRoutes(inputs.mediaKeys, logger), LocationRoutes(inputs.location, inputs.clock, logger),
@@ -157,13 +162,25 @@ class LinkRuntime(
         inputs.connectedCallback(::requestStart)
     }
 
-    fun requestStart() = checkNotNull(starter) { "Android startup is unavailable in the injected runtime." }.start()
+    fun requestStart(): Boolean {
+        if (inputs.isKilled()) {
+            logger.warn("LinkRuntime", "requestStart", "state=killed")
+            return false
+        }
+        checkNotNull(starter) { "Android startup is unavailable in the injected runtime." }.start()
+        return true
+    }
     fun serviceCreated(service: Service) = checkNotNull(lifetime).created(service)
     fun serviceDestroyed() = checkNotNull(lifetime).destroyed()
+    fun onStartCommand(): Int = if (start()) Service.START_STICKY else Service.START_NOT_STICKY
 
-    fun start() {
+    fun start(): Boolean {
+        if (inputs.isKilled()) {
+            logger.warn("LinkRuntime", "start", "state=killed")
+            return false
+        }
         check(!stopped.get()) { "The runtime has been permanently stopped." }
-        if (!started.compareAndSet(false, true)) return
+        if (!started.compareAndSet(false, true)) return true
         installFailureHandler { thread, cause ->
             try {
                 logger.error("LinkApp", "uncaughtException", "threadId=${thread.id}", FailureDiagnostics.sanitized(cause))
@@ -183,6 +200,7 @@ class LinkRuntime(
             }
             supervisor.run()
         }
+        return true
     }
 
     fun create(activity: Activity, linkSwitch: LinkSwitch? = null, onKilled: () -> Unit = {}): StatusViewBinder {
@@ -246,12 +264,12 @@ class LinkRuntime(
     companion object {
         private fun androidInputs(context: Context, logger: Logger, scope: CoroutineScope): Inputs {
             val clock = RuntimeClock()
-            val events = EventBuffer(clock)
-            val hub = AccessibilityHub(logger, clock, Dispatchers.Main.immediate, EventFeed(events, logger),
+            val events = EventBuffer(clock, SystemClock::uptimeMillis)
+            val keyguard = checkNotNull(context.getSystemService(KeyguardManager::class.java))
+            val hub = AccessibilityHub(logger, clock, Dispatchers.Main.immediate, EventFeed(events, logger) { keyguard.isKeyguardLocked },
                 AndroidActivityResolver({ context.packageManager }, logger))
             LinkAccessibilityService.hub = hub
             val power = AndroidPowerState(checkNotNull(context.getSystemService(PowerManager::class.java)), logger)
-            val keyguard = checkNotNull(context.getSystemService(KeyguardManager::class.java))
             val guard = AndroidKeyguardState(keyguard, logger)
             val trampoline = TrampolineLauncher(context, logger)
             TrampolineActivity.jobs = TrampolineJobs(keyguard,
@@ -290,6 +308,8 @@ class LinkRuntime(
                 sms = AndroidSmsSender(context, logger), outbound = OutboundFileStore(context, logger),
                 shares = AndroidShareLauncher(context, logger),
                 notifications = notifications, files = AndroidFileAccess(context, logger), probe = probe,
+                isKilled = (context.applicationContext as LinkApp).killSwitch::isKilled,
+                keyguard = guard,
                 serviceAvailability = foreground::available,
             )
         }

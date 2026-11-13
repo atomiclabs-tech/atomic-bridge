@@ -35,7 +35,7 @@ def test_bad_probe_inputs_do_not_dispatch(monkeypatch, args):
 
 
 def test_new_schema_inventory_and_probe_contract():
-    assert set(SCHEMAS) == {"android_notifications_recent", "android_wait_notification", "android_list_files", "android_pull_file", "android_push_file", "android_call_audio_probe"}
+    assert set(SCHEMAS) == {"android_notifications_recent", "android_wait_notification", "android_list_files", "android_pull_file", "android_push_file", "android_call_audio_probe", "android_unlock"}
     properties = SCHEMAS["android_call_audio_probe"]["parameters"]["properties"]
     assert {key: item.get("default") for key, item in properties.items() if key != "device"} == {"duration_ms": 4000, "speaker": "both", "inject": True}
     assert properties["speaker"]["enum"] == ["on", "off", "both"]

@@ -25,6 +25,42 @@ class EventBufferTest {
         assertTrue(buffer.recent().entries.isEmpty())
     }
 
+    @Test fun sensitiveCapturePurgesHistorySurvivesStreamTogglesAndRejectsLateCallbacksOnItsOwnClock() = runTest {
+        val clock = FakeClock(testScheduler)
+        var uptime = 10L
+        val buffer = EventBuffer(clock) { uptime }
+        buffer.setStreaming(true)
+        fun append(at: Long = uptime) = buffer.append(EventBuffer.Type.CLICK, "app", null, "ordinary", null, at)
+        append()
+        buffer.beginSensitiveInput()
+        assertTrue(buffer.recent().entries.isEmpty())
+        buffer.setStreaming(true)
+        append()
+        assertTrue(buffer.recent().entries.isEmpty())
+        advanceTimeBy(100_000) // Elapsed time can diverge from Android's event uptime across deep sleep.
+        uptime = 20
+        buffer.endSensitiveInput()
+        append(15)
+        append(20)
+        assertTrue(buffer.recent().entries.isEmpty())
+        uptime = 21
+        append()
+        assertEquals(1, buffer.recent().entries.size)
+        assertTrue(buffer.recent().streaming)
+    }
+
+    @Test fun nestedSensitiveScopesKeepCaptureClosedUntilTheLastScopeEnds() = runTest {
+        val buffer = EventBuffer(FakeClock(testScheduler))
+        buffer.setStreaming(true)
+        buffer.beginSensitiveInput(); buffer.beginSensitiveInput()
+        buffer.endSensitiveInput()
+        advanceTimeBy(1)
+        assertTrue(buffer.suppresses(currentTime))
+        buffer.endSensitiveInput()
+        advanceTimeBy(1)
+        assertFalse(buffer.suppresses(currentTime))
+    }
+
     @Test fun throttleIsPerTypeAndPackageAndAcceptsTheHundredMillisecondBoundary() = runTest {
         val clock = FakeClock(testScheduler, 1000)
         val buffer = EventBuffer(clock)

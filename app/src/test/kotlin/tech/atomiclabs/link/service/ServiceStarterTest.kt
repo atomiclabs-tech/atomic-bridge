@@ -25,6 +25,62 @@ class ServiceStarterTest {
     @Before fun setup() { mockkConstructor(Intent::class) }
     @After fun cleanup() { unmockkConstructor(Intent::class) }
 
+    @Test fun companionForwardsEveryTriggerToTheRuntimeGate() = runTest {
+        val context = mockk<Context>()
+        val app = mockk<LinkApp>()
+        every { context.applicationContext } returns app
+        every { context.getSystemService(PowerManager::class.java) } returns mockk(relaxed = true)
+        every { context.startForegroundService(any()) } returns mockk<ComponentName>()
+        var killed = false
+        val scope = CoroutineScope(SupervisorJob() + StandardTestDispatcher(testScheduler))
+        val runtime = LinkRuntime(FakeLogger(), runtimeInputs(FakeClock(testScheduler)).copy(isKilled = { killed }),
+            scope, context, installFailureHandler = {})
+        every { app.runtime } returns runtime
+        try {
+            assertTrue(runtime.requestStart())
+            ServiceStarter.start(context)
+            assertTrue(runtime.start())
+            assertEquals(Service.START_STICKY, runtime.onStartCommand())
+            killed = true
+            ServiceStarter.start(context)
+            assertFalse(runtime.requestStart())
+            runCurrent()
+            verify(exactly = 2) { context.startForegroundService(any()) }
+            verify(exactly = 0) { app.killSwitch }
+        } finally { runtime.shutdown() }
+    }
+
+    @Test fun refusedRuntimeClearsAvailabilityReleasesTheLockAndStopsOnlyOnce() {
+        for (promotionRefused in listOf(false, true)) {
+            val service = mockk<Service>(relaxed = true)
+            if (promotionRefused) every { service.startForeground(any(), any(), any()) } throws SecurityException("promotion refused")
+            val notification = mockk<ServiceNotification>()
+            every { notification.build() } returns mockk<Notification>()
+            val power = mockk<PowerManager>()
+            val lock = mockk<PowerManager.WakeLock>(relaxed = true)
+            every { power.newWakeLock(any(), any()) } returns lock
+            var held = false
+            val availability = mutableListOf<Service?>()
+            every { lock.acquire() } answers { held = true }
+            every { lock.release() } answers { assertNull(availability.last()); held = false }
+            every { lock.isHeld } answers { held }
+            val logger = FakeLogger()
+            var starts = 0
+            val lifetime = ConnectionServiceLifetime(notification, power, logger, { availability += it }) { starts++; false }
+            lifetime.created(service)
+            assertNull(availability.last())
+            assertFalse(held)
+            assertEquals(1, starts)
+            val warning = logger.entries.single { it.level == "warn" }
+            assertEquals("ConnectionService", warning.component)
+            assertEquals("create", warning.operation)
+            assertEquals("state=killed", warning.context)
+            lifetime.destroyed(); lifetime.destroyed()
+            verify(exactly = 1) { service.stopSelf() }
+            verify(exactly = if (promotionRefused) 0 else 1) { lock.acquire(); lock.release() }
+        }
+    }
+
     @Test fun foregroundRefusalStillStartsRuntimeAndEveryLaterTriggerRetries() {
         val context = mockk<Context>()
         val logger = FakeLogger()
@@ -124,7 +180,7 @@ class ServiceStarterTest {
         every { lock.isHeld } answers { held }
         var starts = 0
         val availability = mutableListOf<Service?>()
-        val lifetime = ConnectionServiceLifetime(notification, power, FakeLogger(), { availability += it }) { starts++ }
+        val lifetime = ConnectionServiceLifetime(notification, power, FakeLogger(), { availability += it }) { starts++; true }
         lifetime.created(service); lifetime.destroyed(); lifetime.destroyed()
         assertEquals(1, starts); assertFalse(held)
         assertEquals(listOf(service, null, null), availability)
@@ -144,7 +200,7 @@ class ServiceStarterTest {
         every { lock.isHeld } returns false
         val logger = FakeLogger()
         var starts = 0
-        val lifetime = ConnectionServiceLifetime(notification, power, logger, {}) { starts++ }
+        val lifetime = ConnectionServiceLifetime(notification, power, logger, {}) { starts++; true }
         assertThrows(IllegalStateException::class.java) { lifetime.created(service) }
         assertEquals(1, starts)
         every { lock.isHeld } returns true
@@ -166,7 +222,7 @@ class ServiceStarterTest {
         val cleanup = SecurityException("private-cleanup")
         every { lock.release() } throws cleanup
         val logger = FakeLogger()
-        val lifetime = ConnectionServiceLifetime(notification, power, logger, {}) {}
+        val lifetime = ConnectionServiceLifetime(notification, power, logger, {}) { true }
         val failure = assertThrows(IllegalStateException::class.java) { lifetime.created(service) }
         assertEquals("The connection wake lock was not acquired.", failure.cause!!.message)
         assertSame(cleanup, failure.cause!!.suppressed.single().cause)

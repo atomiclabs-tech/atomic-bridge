@@ -1,6 +1,6 @@
 # Atomic Bridge on the Mac
 
-Atomic Bridge's Python 3.12 relay connects your phone to the 41 `android_*` tools.
+Atomic Bridge's Python 3.12 relay connects your phone to the 42 `android_*` tools.
 The `atomic-bridge` plugin uses only the standard library; the server uses
 aiohttp 3.14.3. The phone, relay and plugin keep the Hermes-Relay wire protocol
 and session format. See the [operator guide](../docs/OPERATOR.md) for the
@@ -87,7 +87,18 @@ it cannot register pairing, select devices or invoke local admin routes.
 Stored session expiries and grants are unchanged on load. Atomic Bridge recovers its
 connection after crashes and reboots. The one-time `WRITE_SECURE_SETTINGS`
 grant enables accessibility self-heal; **Kill link** stays off until **Turn
-link back on**. Android may expose sensitive app content through accessibility.
+link back on**. Without the grant, Android may keep accessibility enabled,
+but the link stays off and the status screen says when screen control remains
+on. Android may expose sensitive app content through accessibility.
+
+`android_unlock` reads the PIN from a private file on this Mac for each call;
+the tool has no PIN argument, and the PIN never passes through the agent,
+chat, argv or tool output. Configure the optional
+`ATOMIC_RELAY_UNLOCK_PIN_FILE` using [Unlock with a PIN](../docs/OPERATOR.md#unlock-with-a-pin).
+Use unlock only over Tailscale or loopback: the PIN travels in cleartext on
+`ws://`, while Tailscale encrypts that private-IP transport.
+It supports PIN locks only, with one entry per call; a wrong PIN spends a real
+lockout attempt. Nothing runs before the first local unlock after a reboot.
 
 ## Run, pair and status
 
@@ -288,6 +299,7 @@ non-loopback destinations.
 | `ATOMIC_RELAY_PORT` | `8767`; use `0` only for isolated tests |
 | `ATOMIC_RELAY_SESSIONS_FILE` | `~/.hermes/hermes-relay-sessions.json`; empty means in-memory tests |
 | `ATOMIC_RELAY_ADMIN_SECRET_FILE` | `~/services/atomic-bridge/admin.secret`; regular private file (mode `0600`), at least 32 characters; empty refuses all admin routes with a startup WARNING for isolated health/tests; replace the file and restart the relay to rotate |
+| `ATOMIC_RELAY_UNLOCK_PIN_FILE` | empty; optional path to a regular private file (mode `0600`), owned by the relay's user, not a symlink, at most 1 KiB, holding the phone's lock-screen PIN, 4 to 16 digits; read on every `android_unlock`; when set it is validated at startup |
 | `ATOMIC_RELAY_TRUSTED_PROXIES` | empty; comma-separated proxy IP addresses; only listed transport peers may supply client/TLS forwarding headers; use the right-most untrusted client address, or the peer if all hops are trusted |
 | `ATOMIC_RELAY_NOTIFY_ALLOW` | empty; comma-separated exact package names (`[A-Za-z0-9_.]+`) or `prefix.*` patterns; empty keeps all unless denied, otherwise requires a match; invalid patterns fail startup |
 | `ATOMIC_RELAY_NOTIFY_DENY` | empty; same pattern syntax as allow; a match drops posted and removed events before buffering or waiter publication, taking precedence over allow |
@@ -297,7 +309,7 @@ non-loopback destinations.
 | `ATOMIC_RELAY_MEDIA_MAX_MB` | `256`; transfer size limit |
 | `ATOMIC_RELAY_MEDIA_TTL_SECONDS` | `86400`; token lifetime |
 | `ATOMIC_RELAY_MEDIA_ALLOWED_ROOTS` | `~/.hermes/workspace`; colon-separated registration roots; uploads use `ATOMIC_RELAY_MEDIA_DIR` |
-| `ATOMIC_RELAY_SERVER_VERSION` | package version `2.3.0`; health/auth version |
+| `ATOMIC_RELAY_SERVER_VERSION` | package version `2.4.0`; health/auth version |
 | `ANDROID_BRIDGE_URL` | HTTP IPv4-loopback URL on port `8767`; exact executable default in `.env.example`; plugin also accepts localhost, while operator settings require a literal loopback address |
 | `ATOMIC_BRIDGE_ADMIN_SECRET_FILE` | `~/services/atomic-bridge/admin.secret`; admin bearer for every plugin request and download |
 | `ANDROID_BRIDGE_TIMEOUT` | `30`; request timeout in seconds |
@@ -315,9 +327,9 @@ failures only; never share raw device responses, credentials or phone content.
 
 The relay is an independent Python service and the phone plugin uses only the
 standard library. The original 35 Android tools retain their schemas apart
-from the optional `android_drag.hold_ms` addition; six tools add notifications,
-file transfer and the call-audio probe. Desktop and dashboard surfaces are not
-registered. Session/grant persistence and wire routing remain compatible.
+from the optional `android_drag.hold_ms` addition; seven tools add notifications,
+file transfer, the call-audio probe and PIN unlock. Desktop and dashboard
+surfaces are not registered. Session/grant persistence and wire routing remain compatible.
 Local relay logging replaces central CLI logging. The installer preserves
 existing installations; the operator controls gateway restarts and session
 refreshes. Upstream attribution is retained in [NOTICE](../NOTICE).

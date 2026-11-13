@@ -4,8 +4,8 @@
 
 | Version | Security support |
 | --- | --- |
-| 1.0.0 | Supported |
-| Earlier versions | Update to 1.0.0 |
+| 1.0.1 | Supported |
+| Earlier versions | Update to 1.0.1 |
 
 ## Reporting a vulnerability
 

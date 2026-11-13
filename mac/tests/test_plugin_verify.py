@@ -54,8 +54,8 @@ def test_ok_with_warning_cannot_prove_registration(tmp_path, warning):
 
 
 @pytest.mark.parametrize("before,after", [
-    ("41 tool(s)", "40 tool(s)"), ("0 hook(s)", "1 hook(s)"),
-    ("  OK:", "  ERROR:"), ("atomic-bridge 2.3.0", "atomic-bridge 1.0.0"),
+    ("42 tool(s)", "40 tool(s)"), ("0 hook(s)", "1 hook(s)"),
+    ("  OK:", "  ERROR:"), ("atomic-bridge 2.4.0", "atomic-bridge 1.0.0"),
     ("(standalone)", "(model-provider)"), ("registration passed", "registration failed"),
     ("/atomic-bridge\n", "/atomic-bridge-impostor\n"),
 ])

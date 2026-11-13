@@ -12,12 +12,14 @@ class KillSwitch(
     private val logger: Logger,
     private val load: () -> Boolean,
     private val save: (Boolean) -> Unit,
-    private val disableScreenControl: () -> Unit,
+    private val disableScreenControl: () -> Boolean,
+    private val screenControlEnabled: () -> Boolean,
     private val enableScreenControl: () -> Unit,
     private val stopProcess: () -> Unit,
     private val startLink: () -> Unit,
 ) : tech.atomiclabs.link.ui.LinkSwitch {
     override fun isKilled() = load()
+    override fun isScreenControlOn() = screenControlEnabled()
 
     /** Process start: heal screen control and connect unless the user killed the link. */
     fun onProcessStart(): Boolean {
@@ -29,8 +31,8 @@ class KillSwitch(
 
     override fun kill() {
         save(true)
-        logger.info("KillSwitch", "kill", "state=killed")
-        disableScreenControl()
+        if (disableScreenControl()) logger.info("KillSwitch", "kill", "state=killed")
+        else logger.warn("KillSwitch", "kill", "state=screen_control_kept grant=missing")
         stopProcess()
     }
 
@@ -50,6 +52,7 @@ class KillSwitch(
                 load = { prefs.getBoolean("killed", false) },
                 save = { prefs.edit().putBoolean("killed", it).commit() },
                 disableScreenControl = { heal().disable() },
+                screenControlEnabled = { heal().isOn() },
                 enableScreenControl = { heal().run() },
                 stopProcess = stopProcess,
                 startLink = startLink,

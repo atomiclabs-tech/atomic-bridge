@@ -1,6 +1,7 @@
 package tech.atomiclabs.link.device.access
 
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -81,8 +82,60 @@ class EventFeedTest {
         assertNull(missing.className); assertNull(missing.contentDescription)
     }
 
+    @Test fun keyguardAndPasswordCallbacksAreRefusedBeforeCopyingTheirContent() = runTest {
+        val buffer = EventBuffer(FakeClock(testScheduler)).also { it.setStreaming(true) }
+        var showing = true
+        val logger = FakeLogger()
+        val feed = EventFeed(buffer, logger) { showing }
+        val locked = mockk<AccessibilityEvent>()
+        feed.onEvent(locked)
+        verify { locked wasNot Called }
+        showing = false
+        val password = event(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)
+        every { password.isPassword } returns true
+        feed.onEvent(password)
+        verify(exactly = 0) { password.text; password.contentDescription }
+        assertTrue(buffer.recent().entries.isEmpty())
+        assertTrue(logger.entries.isEmpty())
+    }
+
+    @Test fun lateBouncerSourceIsRefusedWhileAnOrdinaryUnlockedSystemUiSourceStillRecords() = runTest {
+        val buffer = EventBuffer(FakeClock(testScheduler)).also { it.setStreaming(true) }
+        val logger = FakeLogger()
+        val feed = EventFeed(buffer, logger)
+        val bouncer = event(AccessibilityEvent.TYPE_VIEW_CLICKED)
+        every { bouncer.packageName } returns "com.android.systemui"
+        val source = mockk<AccessibilityNodeInfo>()
+        every { bouncer.source } returns source
+        every { source.isPassword } returns false
+        every { source.viewIdResourceName } returns "com.android.systemui:id/key_enter"
+        every { source.className } returns "android.widget.Button"
+        feed.onEvent(bouncer)
+        verify(exactly = 0) { bouncer.text; bouncer.contentDescription }
+        assertTrue(buffer.recent().entries.isEmpty())
+        val ordinary = event(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
+        every { ordinary.packageName } returns "com.android.systemui"
+        every { ordinary.source } returns null
+        feed.onEvent(ordinary)
+        assertEquals(1, buffer.recent().entries.size)
+    }
+
+    @Test fun aFailedKeyguardReadFailsClosedAndLogsOnlyASanitizedCause() = runTest {
+        val buffer = EventBuffer(FakeClock(testScheduler)).also { it.setStreaming(true) }
+        val logger = FakeLogger()
+        val feed = EventFeed(buffer, logger) { throw IllegalStateException("private callback failure") }
+        val event = mockk<AccessibilityEvent>()
+        feed.onEvent(event)
+        verify { event wasNot Called }
+        assertTrue(buffer.recent().entries.isEmpty())
+        assertEquals("error", logger.entries.single().level)
+        assertFalse(logger.entries.single().cause!!.stackTraceToString().contains("private callback failure"))
+    }
+
     private fun event(type: Int): AccessibilityEvent = mockk<AccessibilityEvent>().also { event ->
         every { event.eventType } returns type
+        every { event.eventTime } returns 0L
+        every { event.isPassword } returns false
         every { event.packageName } returns "example"
         every { event.className } returns "Field"
         every { event.text } returns mutableListOf("private-event-text")

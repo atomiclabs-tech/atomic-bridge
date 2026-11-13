@@ -26,12 +26,12 @@ DOCTOR_OUTPUTS = {
     "a": ('Plugin Doctor: @PLUGIN_DIR@\n'
           '  manifest: atomic-bridge 2.1.0 (standalone)\n'
           '  OK: runtime discovery, manifest parsing, import, and registration passed\n'
-          '  registrations: 41 tool(s), 0 hook(s)\n'),
+          '  registrations: 42 tool(s), 0 hook(s)\n'),
     "b": ('\nPlugin Doctor: @PLUGIN_DIR@\n'
           '    manifest: atomic-bridge 2.1.0 (standalone)\n'
           '    OK: runtime discovery, manifest parsing, import, and\n'
           '    registration passed\n'
-          '    registrations: 41 tool(s), 0 hook(s)\n'),
+          '    registrations: 42 tool(s), 0 hook(s)\n'),
 }
 
 

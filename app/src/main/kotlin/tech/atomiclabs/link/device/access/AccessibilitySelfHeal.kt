@@ -26,6 +26,8 @@ class AccessibilitySelfHeal(
 ) {
     enum class Result { ALREADY_ON, HEALED, NO_GRANT, FAILED }
 
+    fun isOn(): Boolean = isEnabled(readEnabled(), component)
+
     fun run(): Result {
         val current = readEnabled()
         if (isEnabled(current, component)) return Result.ALREADY_ON

@@ -16,7 +16,7 @@ def test_settings_use_installed_versions_and_configured_port(tmp_path):
     assert settings.url == "http://127.0.0.1:19876"
     assert settings.version(False) == "operator-version" and settings.version(True) == "1.13.1"
     env.write_text("ATOMIC_RELAY_PORT=19876\n")
-    assert load_settings(layout, ROOT / "mac/.env.example").new_version == "2.3.0"
+    assert load_settings(layout, ROOT / "mac/.env.example").new_version == "2.4.0"
 
 
 @pytest.mark.parametrize("value", [
@@ -45,7 +45,7 @@ def test_secret_home_expansion_is_injected_and_upgrade_uses_relay_not_retired_pl
     monkeypatch.setattr(Path, "home", forbidden)
     settings = load_settings(layout, ROOT / "mac/.env.example", upgrade=True)
     assert settings.secret_file == layout.service / "admin.secret"
-    assert settings.new_version == "2.3.0" and settings.old_version == "1.19.3"
+    assert settings.new_version == "2.4.0" and settings.old_version == "1.19.3"
 
 
 @pytest.mark.parametrize("upgrade", [False, True], ids=["current-mode", "upgrade-mode"])

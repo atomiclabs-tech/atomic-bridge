@@ -33,6 +33,7 @@ files does not remove its upstream attribution.
 | --- | --- |
 | `app/src/main/kotlin/tech/atomiclabs/link/core/events/EventBuffer.kt` | `app/src/main/kotlin/com/hermesandroid/relay/event/EventStore.kt` |
 | `app/src/main/kotlin/tech/atomiclabs/link/core/input/KeyCommands.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
+| `app/src/main/kotlin/tech/atomiclabs/link/core/input/NodeClick.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
 | `app/src/main/kotlin/tech/atomiclabs/link/core/input/ScrollCommand.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
 | `app/src/main/kotlin/tech/atomiclabs/link/core/input/SwipeGeometry.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
 | `app/src/main/kotlin/tech/atomiclabs/link/core/input/TapCommands.kt` | `app/src/main/kotlin/com/hermesandroid/relay/accessibility/ActionExecutor.kt` |
@@ -122,3 +123,12 @@ The extractor is listed because it identifies and reproduces the pinned schema
 literals; the generated JSON fixture carries that upstream material even though
 JSON has no comment header. Newly authored Atomic files are not attributed as
 upstream ports solely because they implement the same protocol.
+
+Contributions
+=============
+
+The unlock route (`app/src/main/kotlin/tech/atomiclabs/link/core/unlock/`,
+`mac/atomic_relay/web/routes_unlock.py`,
+`mac/atomic_relay/sessions/unlock_pin.py` and the `android_unlock` tool)
+started from a patch contributed by Xavier (@macurex) under the project's MIT
+license.

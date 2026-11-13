@@ -113,7 +113,7 @@ class MicrophoneForegroundTest {
         every { wake.acquire() } answers { held = true }
         every { wake.release() } answers { held = false }
         every { wake.isHeld } answers { held }
-        val lifetime = ConnectionServiceLifetime(f.notification, power, f.logger, f.foreground::available) {}
+        val lifetime = ConnectionServiceLifetime(f.notification, power, f.logger, f.foreground::available) { true }
         lifetime.created(f.service)
         assertTrue(f.foreground.startMicrophone() is PortResult.Success)
         lifetime.destroyed()

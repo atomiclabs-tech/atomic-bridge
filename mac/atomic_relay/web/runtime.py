@@ -31,6 +31,7 @@ class RelayRuntime:
         self.pending_auth = 0
         self.trusted_proxies = config.trusted_proxies
         self.server_version = config.server_version
+        self.unlock_pin_file = config.unlock_pin_file
         self.media = MediaRegistry(MediaPaths(config.media_allowed_roots, config.media_dir, config.media_max_bytes,
                                              sessions_file=config.sessions_file), config.media_ttl_seconds)
         self.notifications = NotificationBuffer()

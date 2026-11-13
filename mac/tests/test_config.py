@@ -1,8 +1,12 @@
 from session_cases import credential_log_guard as credential_log_guard
 
 import json
+import os
+import secrets
 import stat
+import string
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -32,9 +36,69 @@ def test_defaults_and_private_storage(settings):
     assert config.log_level == "INFO"
     assert config.media_max_bytes == 256 * 1024 * 1024
     assert config.media_ttl_seconds == 86400
-    assert config.server_version == "2.3.0"
+    assert config.server_version == "2.4.0"
     assert stat.S_IMODE(config.media_dir.stat().st_mode) == 0o700
     assert config.log_file.is_file()
+    assert config.unlock_pin_file is None
+
+
+def test_unlock_pin_file_setting_is_accepted_and_expands_home(settings, tmp_path, monkeypatch):
+    path = tmp_path / "private-pin"
+    path.write_text("".join(secrets.choice(string.digits) for _ in range(6)))
+    path.chmod(0o600)
+    monkeypatch.setattr("os.path.expanduser", lambda value: str(tmp_path) + value[1:] if value.startswith("~") else value)
+    config = load_config(environ={**settings, "ATOMIC_RELAY_UNLOCK_PIN_FILE": "~/private-pin"})
+    assert config.unlock_pin_file == path
+
+
+@pytest.mark.parametrize("failure", ["missing", "public", "non-digit", "short", "long",
+                                     "symlink", "foreign-owner", "oversized"])
+def test_unlock_pin_file_is_validated_at_startup(settings, tmp_path, monkeypatch, failure):
+    path = tmp_path / "private-pin"
+    length = {"short": 3, "long": 17}.get(failure, 6)
+    content = "".join(secrets.choice(string.digits) for _ in range(length))
+    if failure != "missing":
+        path.write_text(content + "x" if failure == "non-digit" else content)
+        path.chmod(0o644 if failure == "public" else 0o600)
+        if failure == "symlink":
+            target = tmp_path / "private-target"
+            path.rename(target)
+            path.symlink_to(target)
+        elif failure == "oversized":
+            path.write_text(" " * 1024 + content)
+        elif failure == "foreign-owner":
+            original, inode = os.fstat, path.stat().st_ino
+            def foreign_owner(descriptor):
+                metadata = original(descriptor)
+                if metadata.st_ino != inode:
+                    return metadata
+                return SimpleNamespace(st_mode=metadata.st_mode, st_size=metadata.st_size,
+                                       st_uid=os.geteuid() + 1)
+            monkeypatch.setattr(os, "fstat", foreign_owner)
+    with pytest.raises(ConfigError, match="component=config operation=unlock-pin") as refused:
+        load_config(environ={**settings, "ATOMIC_RELAY_UNLOCK_PIN_FILE": str(path)})
+    leaked = content in str(refused.value)
+    assert not leaked, "Startup error exposed PIN contents"
+
+
+def test_serve_refuses_bad_unlock_file_before_starting(settings, tmp_path, monkeypatch, caplog):
+    from atomic_relay import cli
+    path = tmp_path / "private-pin"
+    content = "".join(secrets.choice(string.digits) for _ in range(17))
+    path.write_text(content)
+    path.chmod(0o600)
+    for key, value in {**settings, "ATOMIC_RELAY_UNLOCK_PIN_FILE": str(path)}.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setattr(cli, "configure_startup_logging", lambda: None)
+    started = []
+    async def serve(config):
+        started.append(True)
+    monkeypatch.setattr(cli, "serve", serve)
+    assert cli.main(["serve"]) == 1
+    assert not started
+    assert "component=config operation=unlock-pin digits required" in caplog.text
+    leaked = content in caplog.text
+    assert not leaked, "Serve-time diagnostics exposed PIN contents"
 
 
 def test_env_file_and_process_precedence(settings, tmp_path):

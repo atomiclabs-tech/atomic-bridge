@@ -9,8 +9,8 @@ from ops_cases import ROOT, installed
 
 def test_reads_exact_atomic_and_selected_old_declarations(tmp_path):
     actual = read_manifest(ROOT / "mac/atomic_bridge")
-    assert actual.name == "atomic-bridge" and actual.version == "2.3.0"
-    assert len(actual.tools) == 41 and actual.hooks == () and actual.kind == "standalone"
+    assert actual.name == "atomic-bridge" and actual.version == "2.4.0"
+    assert len(actual.tools) == 42 and actual.hooks == () and actual.kind == "standalone"
     old = read_manifest(installed(tmp_path).plugin("hermes-relay"))
     assert old.tools == ("android_ping", "android_tap") and old.hooks == ("on_session_start",)
 

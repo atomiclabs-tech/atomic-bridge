@@ -10,8 +10,8 @@ class KeyCommands(
     private val power: PowerState, private val text: TextEntry, private val clock: Clock,
 ) {
     fun needs(body: BodyParams): RouteNeeds = when (name(body)) {
-        "volume_up", "volume_down" -> RouteNeeds()
-        "power" -> RouteNeeds(accessibility = true)
+        "volume_up", "volume_down" -> RouteNeeds(exclusive = true)
+        "power" -> RouteNeeds(accessibility = true, exclusive = true)
         else -> RouteNeeds(true, true)
     }
 

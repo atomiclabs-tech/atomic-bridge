@@ -4,7 +4,7 @@ package tech.atomiclabs.link.core.events
 import tech.atomiclabs.link.core.port.Clock
 
 /** Memory-only stream history; transitions, throttling and snapshots share one lock. */
-class EventBuffer(private val clock: Clock) {
+class EventBuffer(private val clock: Clock, private val captureTime: () -> Long = clock::monotonicMs) {
     enum class Type(val wireName: String, val source: String) {
         CLICK("click", "TYPE_VIEW_CLICKED"),
         TEXT_CHANGED("text_changed", "TYPE_VIEW_TEXT_CHANGED"),
@@ -24,6 +24,27 @@ class EventBuffer(private val clock: Clock) {
     private val entries = ArrayDeque<Entry>()
     private val lastRecorded = mutableMapOf<Pair<Type, String?>, Long>()
 
+    private var sensitiveDepth = 0
+    private var suppressedThrough: Long? = null
+
+    @Synchronized fun beginSensitiveInput() {
+        sensitiveDepth++
+        entries.clear()
+        lastRecorded.clear()
+    }
+
+    @Synchronized fun endSensitiveInput() {
+        check(sensitiveDepth > 0) { "Sensitive input capture is not active." }
+        suppressedThrough = captureTime()
+        sensitiveDepth--
+        entries.clear()
+        lastRecorded.clear()
+    }
+
+    /** Event timestamps use the injected uptime clock, including callbacks delivered after unlock. */
+    @Synchronized fun suppresses(capturedAt: Long): Boolean =
+        sensitiveDepth > 0 || suppressedThrough?.let { capturedAt <= it } == true
+
     @Synchronized fun setStreaming(enabled: Boolean) {
         isStreaming = enabled
         entries.clear()
@@ -31,8 +52,8 @@ class EventBuffer(private val clock: Clock) {
     }
 
     @Synchronized fun append(type: Type, packageName: String?, className: String?,
-        text: String?, contentDescription: String?) {
-        if (!isStreaming) return
+        text: String?, contentDescription: String?, capturedAt: Long = captureTime()) {
+        if (!isStreaming || suppresses(capturedAt)) return
         val now = clock.monotonicMs()
         lastRecorded.entries.removeAll { now - it.value >= THROTTLE_MS }
         val key = type to packageName

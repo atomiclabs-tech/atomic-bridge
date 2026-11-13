@@ -91,7 +91,14 @@ def android_wait(args: dict, **kwargs):
     return call("POST", "/wait", args, values)
 
 
+@tool_handler
+def android_unlock(args: dict, **kwargs):
+    if "pin" in args:
+        raise ToolInputError("pin is not accepted; configure ATOMIC_RELAY_UNLOCK_PIN_FILE on the relay")
+    return call("POST", "/unlock", args, {})
+
+
 HANDLERS = {function.__name__: function for function in (
     android_tap, android_tap_text, android_long_press, android_type, android_swipe,
-    android_drag, android_scroll, android_press_key, android_wait,
+    android_drag, android_scroll, android_press_key, android_wait, android_unlock,
 )}

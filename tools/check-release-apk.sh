@@ -7,7 +7,7 @@ fail() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 [[ $# -ge 1 ]] || fail 'Usage: check-release-apk.sh <apk> [--version-code N] [--debuggable]'
 apk="$1"
 shift
-version_code=8
+version_code=10
 allow_debuggable=false
 while [[ $# -gt 0 ]]; do
     case "$1" in

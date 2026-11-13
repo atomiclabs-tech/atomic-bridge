@@ -26,6 +26,19 @@ import tech.atomiclabs.link.core.protocol.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LinkRuntimeTest {
+    @Test fun t5UnlockIsRegisteredThroughTheRealRuntimeRouter() = runTest {
+        val runtime = LinkRuntime(FakeLogger(), runtimeInputs(FakeClock(testScheduler)),
+            featureScope(testScheduler), installFailureHandler = {})
+        val synthetic = buildString { repeat(6) { append(('0'.code + kotlin.random.Random.nextInt(10)).toChar()) } }
+        val response = runtime.router.dispatch(BridgeCommand("unlock-runtime", "POST", "/unlock",
+            body = buildJsonObject { put("pin", synthetic) }))
+        assertTrue("The unlock response must contain no entered digit.", response.result.toString().none { it in '0'..'9' })
+        assertTrue("The router still reports unknown_command.", response.result["code"] != JsonPrimitive("unknown_command"))
+        assertEquals(JsonPrimitive(true), response.result["success"])
+        assertEquals(JsonPrimitive(true), response.result["unlocked"])
+        assertEquals(JsonPrimitive(true), response.result["already_unlocked"])
+    }
+
     @Test fun openAppUsesTheSharedTreeAndClockThenCurrentAppReadsTheLatestForeground() = runTest {
         val clock = FakeClock(testScheduler)
         val bounds = Bounds(0, 0, 10, 10)
@@ -86,6 +99,100 @@ class LinkRuntimeTest {
     private val logger = mockk<Logger>(relaxed = true)
     private lateinit var installedHandler: Thread.UncaughtExceptionHandler
     private var terminated = false
+
+    @Test fun t4KilledRuntimeRefusesEveryStartAndAccessibilityRebindWithoutSideEffects() {
+        val context = mockk<android.content.Context>(relaxed = true)
+        every { context.getSystemService(android.os.PowerManager::class.java) } returns mockk(relaxed = true)
+        val sockets = mockk<RelaySocketFactory>()
+        val sessions = mockk<SessionStore>()
+        val notifications = mockk<NotificationSource>()
+        var connected: (() -> Unit)? = null
+        var installs = 0
+        val fixture = runtimeInputs(FakeClock(scheduler)).copy(isKilled = { true }, sockets = sockets,
+            sessions = sessions, notifications = notifications, connectedCallback = { connected = it })
+        val runtime = LinkRuntime(logger, fixture, scope, context, installFailureHandler = { installs++ })
+        assertFalse(runtime.requestStart())
+        assertFalse(runtime.start())
+        assertEquals(android.app.Service.START_NOT_STICKY, runtime.onStartCommand())
+        checkNotNull(connected).invoke()
+        scheduler.runCurrent()
+        assertEquals(0, installs)
+        verify(exactly = 0) { context.startForegroundService(any()) }
+        io.mockk.coVerify(exactly = 0) { sockets.connect(any()); sessions.read(); notifications.register(any()) }
+        verify(exactly = 2) { logger.warn("LinkRuntime", "start", "state=killed", null) }
+        verify(exactly = 2) { logger.warn("LinkRuntime", "requestStart", "state=killed", null) }
+    }
+
+    @Test fun androidConstructorUsesTheRealStoredKillReadForStartupAndAccessibilityRebind() = runTest {
+        val context = mockk<android.content.Context>(relaxed = true)
+        val app = mockk<LinkApp>()
+        val prefs = mockk<android.content.SharedPreferences>()
+        var reads = 0
+        every { prefs.getBoolean("killed", false) } answers { reads++; true }
+        every { context.getSharedPreferences("kill_switch", android.content.Context.MODE_PRIVATE) } returns prefs
+        every { context.applicationContext } returns app
+        every { context.getSystemService(android.os.PowerManager::class.java) } returns mockk(relaxed = true)
+        val keyguard = mockk<android.app.KeyguardManager>(relaxed = true)
+        every { context.getSystemService(android.app.KeyguardManager::class.java) } returns keyguard
+        every { context.getSystemService(android.content.ClipboardManager::class.java) } returns mockk(relaxed = true)
+        every { context.getSystemService(android.media.AudioManager::class.java) } returns mockk(relaxed = true)
+        every { context.getSystemService(android.net.ConnectivityManager::class.java) } returns mockk(relaxed = true)
+        every { context.getSystemService(android.hardware.display.DisplayManager::class.java) } returns mockk(relaxed = true)
+        every { context.getSystemService(android.os.BatteryManager::class.java) } returns mockk(relaxed = true)
+        val directory = java.nio.file.Files.createTempDirectory("runtime-kill-test").toFile()
+        every { context.noBackupFilesDir } returns directory
+        every { context.cacheDir } returns directory
+        val killSwitch = KillSwitch.forContext(context, FakeLogger(), {}, {})
+        every { app.killSwitch } returns killSwitch
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val runtime = LinkRuntime(context)
+            try {
+                assertFalse(runtime.requestStart())
+                assertFalse(runtime.start())
+                assertEquals(android.app.Service.START_NOT_STICKY, runtime.onStartCommand())
+                tech.atomiclabs.link.device.access.LinkAccessibilityService.hub.onConnected(mockk(relaxed = true))
+                runCurrent()
+                assertEquals(4, reads)
+                val synthetic = buildString { repeat(6) { append(('0'.code + kotlin.random.Random.nextInt(10)).toChar()) } }
+                val unlocked = runtime.router.dispatch(BridgeCommand("android-unlock", "POST", "/unlock",
+                    body = buildJsonObject { put("pin", synthetic) })).result
+                assertTrue("The production unlock response must contain no entered digit.", unlocked.toString().none { it in '0'..'9' })
+                assertEquals(JsonPrimitive(true), unlocked["unlocked"])
+                assertEquals(JsonPrimitive(true), unlocked["already_unlocked"])
+                verify(exactly = 1) { keyguard.isKeyguardLocked; keyguard.isKeyguardSecure }
+                runtime.router.dispatch(BridgeCommand("runtime-stream", "POST", "/events/stream",
+                    body = buildJsonObject { put("enabled", true) }))
+                val event = mockk<android.view.accessibility.AccessibilityEvent>()
+                every { event.eventType } returns android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED
+                every { event.eventTime } returns 1L
+                every { event.isPassword } returns false
+                every { event.source } returns null
+                every { event.packageName } returns "com.android.systemui"
+                every { event.className } returns "android.widget.Button"
+                every { event.text } returns mutableListOf<CharSequence>(synthetic.first().toString())
+                every { event.contentDescription } returns null
+                every { keyguard.isKeyguardLocked } returns true
+                tech.atomiclabs.link.device.access.LinkAccessibilityService.hub.onEvent(event)
+                val privateEvents = runtime.router.dispatch(BridgeCommand("runtime-private-events", "GET", "/events")).result
+                assertTrue("The default Android constructor must refuse keyguard click capture.",
+                    privateEvents["count"] == JsonPrimitive(0))
+                verify(exactly = 0) { event.text; event.contentDescription }
+                every { keyguard.isKeyguardLocked } returns false
+                every { event.eventTime } returns 2L
+                every { event.text } returns mutableListOf<CharSequence>("ordinary unlocked event")
+                tech.atomiclabs.link.device.access.LinkAccessibilityService.hub.onEvent(event)
+                val ordinaryEvents = runtime.router.dispatch(BridgeCommand("runtime-ordinary-events", "GET", "/events")).result
+                assertTrue("The default Android constructor must still capture unlocked SystemUI events.",
+                    ordinaryEvents["count"] == JsonPrimitive(1))
+                verify(exactly = 0) { context.startForegroundService(any()); prefs.edit() }
+                assertEquals(emptyList<String>(), directory.listFiles()!!.map { it.name })
+            } finally { runtime.shutdown() }
+        } finally {
+            Dispatchers.resetMain()
+            assertTrue(directory.deleteRecursively())
+        }
+    }
 
     @Test fun startIsIdempotentAndAnUnpairedRuntimeOpensNoSocket() {
         val sockets = mockk<RelaySocketFactory>()
@@ -371,6 +478,8 @@ class LinkRuntimeTest {
 }
 
 internal fun runtimeInputs(clock: Clock): LinkRuntime.Inputs = LinkRuntime.Inputs(
+    isKilled = { false },
+    keyguard = KeyguardState { PortResult.Success(KeyguardSnapshot(showing = false, secure = true)) },
     tree = FakeUiTree(), foregroundEvents = FakeForegroundEvents(), display = FakeDisplayGate(),
     capture = object : ScreenshotSource {
         override suspend fun capture(target: CaptureTarget) =

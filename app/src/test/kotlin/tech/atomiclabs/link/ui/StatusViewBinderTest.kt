@@ -315,11 +315,23 @@ class StatusViewBinderTest {
 
     private fun text(id: Int) = views.getValue(id) as TextView
 
-    private class FakeSwitch(var killed: Boolean = false) : LinkSwitch {
+    private class FakeSwitch(var killed: Boolean = false, var screenControlOn: Boolean = false) : LinkSwitch {
         val calls = mutableListOf<String>()
         override fun isKilled() = killed
+        override fun isScreenControlOn() = screenControlOn
         override fun kill() { calls += "kill"; killed = true }
         override fun turnOn() { calls += "on"; killed = false }
+    }
+
+    @Test fun killedDetailReflectsWhetherAndroidKeptScreenControlOn() = runTest {
+        val link = FakeSwitch(killed = true, screenControlOn = true)
+        val binder = binder(backgroundScope, link = link)
+        binder.render(StatusViewState())
+        verify { text(R.id.connection_state).setText(R.string.status_killed_screen_control_on) }
+        link.screenControlOn = false
+        binder.render(StatusViewState())
+        verify { text(R.id.connection_state).setText(R.string.status_killed_detail) }
+        binder.destroy()
     }
 
     @Test fun toneWordsFollowTheConnectionAndKillOverridesThem() = runTest {

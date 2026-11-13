@@ -31,3 +31,7 @@ sealed class CommandResult {
 
     private companion object { val reserved = setOf("success", "error", "code") }
 }
+
+/** Preserves a route's side-effect outcome when cancellation interrupts its deadline context. */
+internal class InterruptedCommandException(val result: CommandResult, cause: Throwable) :
+    IllegalStateException("The command was interrupted.", cause)

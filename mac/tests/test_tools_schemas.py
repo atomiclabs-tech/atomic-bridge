@@ -49,10 +49,10 @@ def test_all_registered_schemas_match_fixture_plus_drag_hold_except_description_
     }
     actual = {name: registered[name] for name in expected}
     assert len(actual) == 35
-    assert len(registered) == len(ctx.tools) == 41
+    assert len(registered) == len(ctx.tools) == 42
     assert set(registered) - set(expected) == {
         "android_notifications_recent", "android_wait_notification", "android_list_files",
-        "android_pull_file", "android_push_file", "android_call_audio_probe",
+        "android_pull_file", "android_push_file", "android_call_audio_probe", "android_unlock",
     }
     assert hashlib.sha256(FIXTURE.read_bytes()).hexdigest() == "c32eed6286737fab83165e08d50643e6015d04d7799726fe8f102719be2c8039"
     assert _without_description_text(actual) == _without_description_text(expected)
@@ -74,6 +74,17 @@ def test_phone_app_descriptions_use_the_full_name():
     has_old_name = any(re.search(r"\bAtomic\b(?! Bridge\b)", text) for text in descriptions)
     assert has_full_name
     assert not has_old_name
+
+
+def test_unlock_schema_has_only_optional_device_and_no_pin_argument():
+    ctx = RecordingContext()
+    atomic_bridge.register(ctx)
+    schema = next(tool["schema"] for tool in ctx.tools if tool["name"] == "android_unlock")
+    parameters = schema["parameters"]
+    assert parameters["type"] == "object" and parameters["required"] == []
+    assert set(parameters["properties"]) == {"device"}
+    assert parameters["properties"]["device"]["type"] == "string"
+    assert "Atomic Bridge" in schema["description"]
 
 
 def test_comparator_preserves_description_keys_and_every_other_field():
@@ -136,7 +147,7 @@ def test_attack11_every_tool_reports_fixed_missing_admin_error_without_http(monk
     arguments.update({
         "android_notifications_recent": {}, "android_wait_notification": {}, "android_list_files": {},
         "android_pull_file": {"path": "synthetic"}, "android_push_file": {"path": str(source)},
-        "android_call_audio_probe": {},
+        "android_call_audio_probe": {}, "android_unlock": {},
     })
 
     class NoNetwork:

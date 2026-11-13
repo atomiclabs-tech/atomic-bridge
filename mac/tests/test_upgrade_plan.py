@@ -19,7 +19,7 @@ def test_plan_order_and_no_host_io(monkeypatch):
     assert all(step.argv[0] == "launchctl" for step in steps if step.argv)
     assert "Operator, from a separate shell: hermes gateway restart" in text and "mac/README.md" in text
     assert "APK" in text and "verified UTC backup" in text
-    assert "release APK code 8" in text and "rollback APK code 9" in text
+    assert "release APK code 10" in text and "rollback APK code 11" in text
     assert "Preserve a valid explicit host list (otherwise set loopback)" in text
     assert [step.operation for step in rollback] == ["preflight", "command", "restore", "command", "health", "phone", "operator"]
     assert "Poll /bridge/devices with the backup's admin credential, if configured (120 s)" in rollback_text

@@ -9,17 +9,24 @@ from atomic_relay.ops.envfile import atomic_write, update
 
 
 def test_four_upgrade_assignments_preserve_comments_unknown_quoting_and_are_idempotent(tmp_path):
+    tmp_path = tmp_path / "folders" / "operator home"
+    tmp_path.mkdir(parents=True)
     path = tmp_path / "relay.env"
     untouched = b'# retained comment\r\nUNKNOWN="quoted # value"\r\nUNRELATED=\'single value\'\r\n'
     path.write_bytes(untouched + b"ATOMIC_RELAY_HOST=old\r\nATOMIC_RELAY_HOST=duplicate\r\nATOMIC_RELAY_SERVER_VERSION=old")
     values = {"ATOMIC_RELAY_HOST": "127.0.0.1", "ATOMIC_RELAY_TRUSTED_PROXIES": "127.0.0.1",
               "ATOMIC_RELAY_ADMIN_SECRET_FILE": str(tmp_path / "operator home/admin.secret"),
-              "ATOMIC_RELAY_SERVER_VERSION": "2.3.0"}
+              "ATOMIC_RELAY_SERVER_VERSION": "2.4.0"}
     assert update(path, values)
     data, inode = path.read_bytes(), path.stat().st_ino
-    assert data.startswith(untouched) and b"old" not in data and b"duplicate" not in data
-    assert data.count(b"ATOMIC_RELAY_HOST=127.0.0.1") == 2
-    assert ("ATOMIC_RELAY_ADMIN_SECRET_FILE='" + values["ATOMIC_RELAY_ADMIN_SECRET_FILE"] + "'").encode() in data
+    assert data.startswith(untouched)
+    lines = data.splitlines()
+    for obsolete in (b"ATOMIC_RELAY_HOST=old", b"ATOMIC_RELAY_HOST=duplicate", b"ATOMIC_RELAY_SERVER_VERSION=old"):
+        assert obsolete not in lines
+    assert lines.count(b"ATOMIC_RELAY_HOST=127.0.0.1") == 2
+    assert b"ATOMIC_RELAY_TRUSTED_PROXIES=127.0.0.1" in lines
+    assert b"ATOMIC_RELAY_SERVER_VERSION=2.4.0" in lines
+    assert ("ATOMIC_RELAY_ADMIN_SECRET_FILE='" + values["ATOMIC_RELAY_ADMIN_SECRET_FILE"] + "'").encode() in lines
     assert path.stat().st_mode & 0o777 == 0o600
     assert not update(path, values) and path.stat().st_ino == inode and path.read_bytes() == data
 

@@ -35,6 +35,6 @@ _NAMES = (
     "android_location", "android_search_contacts", "android_call", "android_send_sms",
     "android_return_to_hermes", "android_share_media", "android_send_mms",
     "android_notifications_recent", "android_wait_notification", "android_list_files",
-    "android_pull_file", "android_push_file", "android_call_audio_probe",
+    "android_pull_file", "android_push_file", "android_call_audio_probe", "android_unlock",
 )
 TOOL_ENTRIES = tuple(ToolEntry(name, _SCHEMAS[name], _HANDLERS[name]) for name in _NAMES)

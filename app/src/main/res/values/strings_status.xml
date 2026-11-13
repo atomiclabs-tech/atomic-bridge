@@ -10,6 +10,7 @@
     <string name="tone_needs_you">Needs you</string>
     <string name="tone_off">Off</string>
     <string name="status_killed_detail">You turned the link off. Screen control is off too.</string>
+    <string name="status_killed_screen_control_on">You turned the link off. Android kept screen control on; turn it off in Settings &gt; Accessibility if you want.</string>
     <string name="status_save">Save</string>
     <string name="status_kill">Kill link</string>
     <string name="status_turn_on">Turn link back on</string>

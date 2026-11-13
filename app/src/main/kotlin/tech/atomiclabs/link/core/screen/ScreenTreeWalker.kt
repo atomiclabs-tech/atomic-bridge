@@ -24,6 +24,7 @@ class ScreenTreeWalker(private val clock: Clock) {
         snapshot: ScreenSnapshot,
         maxVisits: Int = Int.MAX_VALUE,
         deadlineMs: Long? = if (maxVisits == Int.MAX_VALUE) null else clock.monotonicMs() + MAX_SEARCH_MS,
+        includeContainers: Boolean = false,
         accept: suspend (LocatedNode) -> Boolean,
     ): VisitOutcome {
         var visited = 0
@@ -39,7 +40,7 @@ class ScreenTreeWalker(private val clock: Clock) {
                 val properties = cached ?: node.read().valueOrThrow()
                 visited++
                 if (deadlineMs != null && clock.monotonicMs() >= deadlineMs) return VisitOutcome(visited, true)
-                if (NodeFilter.emits(properties)) {
+                if (includeContainers || NodeFilter.emits(properties)) {
                     val located = LocatedNode("w${entry.properties.windowId}:${emitted++}", node, properties)
                     if (!accept(located)) return VisitOutcome(visited, false)
                 }

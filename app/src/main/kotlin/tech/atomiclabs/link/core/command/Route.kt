@@ -9,4 +9,8 @@ data class Route(
     val handle: suspend (BodyParams) -> CommandResult,
 )
 
-data class RouteNeeds(val accessibility: Boolean = false, val display: Boolean = false)
+data class RouteNeeds(
+    val accessibility: Boolean = false,
+    val display: Boolean = false,
+    val exclusive: Boolean = false,
+)

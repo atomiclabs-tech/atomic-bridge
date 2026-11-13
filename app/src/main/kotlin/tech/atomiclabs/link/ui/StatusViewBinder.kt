@@ -112,7 +112,8 @@ class StatusViewBinder(
         view<View>(R.id.connect).visibility = if (showConnect) View.VISIBLE else View.GONE
         view<View>(R.id.kill_switch).visibility = if (showConnect) View.GONE else View.VISIBLE
         if (killed) {
-            view<TextView>(R.id.connection_state).setText(R.string.status_killed_detail)
+            view<TextView>(R.id.connection_state).setText(if (linkSwitch?.isScreenControlOn() == true)
+                R.string.status_killed_screen_control_on else R.string.status_killed_detail)
         } else {
             view<TextView>(R.id.connection_state).text = state.connectionText
         }

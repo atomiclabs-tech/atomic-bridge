@@ -1,8 +1,8 @@
 # Operator guide
 
-Use your own Mac, Android phone and network. The agent or local caller runs on the same Mac as the relay. Keep a dedicated phone charged with screen lock set to None or Swipe.
+Use your own Mac, Android phone and network. The agent or local caller runs on the same Mac as the relay. Keep a dedicated phone charged with screen lock set to None, Swipe, or a PIN with the relay-side unlock configured below.
 
-Atomic Bridge 1.0.0: app 1.0.0 (code 8), relay 2.3.0, plugin 2.3.0.
+Atomic Bridge 1.0.1: app 1.0.1 (code 10), relay 2.4.0, plugin 2.4.0.
 
 ## Build or obtain the APK
 
@@ -107,9 +107,41 @@ tools/py.sh ../tools/call_tool.py android_current_app '{}'
 
 Use the [tools reference](TOOLS.md) to choose the next action. Focus the intended field before typing. Screenshots can be saved with `tools/call_tool.py`'s `--image-dir` option pointing to a private existing directory. Read [Bitwarden setup](BITWARDEN.md) to type a vault field without sending its value through chat or tool output.
 
+## Unlock with a PIN
+
+`android_unlock` uses the phone's PIN from a private file on the relay Mac. The PIN never passes through the agent, chat, process arguments or tool output. The tool accepts only an optional device selector, never a PIN. The relay rejects a caller-supplied `pin`.
+
+The PIN travels in cleartext over `ws://`; anyone on an untrusted LAN could read it. Use unlock only over Tailscale or loopback. Tailscale encrypts the private-IP transport even when the relay address uses `ws://`.
+
+Create a regular file owned by the relay's user with mode `0600`, at most 1 KiB, containing only the phone's 4 to 16 ASCII digits and an optional final newline. Symlinks are refused. In a trusted terminal with shell history, debug tracing and terminal recording disabled, replace the placeholders and use your shell's builtin `printf`:
+
+```sh
+(umask 077; printf '%s\n' "<PIN>" > "<file>")
+```
+
+Choose a new private file, outside git; `umask` does not tighten an existing file's permissions. To retrieve the PIN from a vault instead, use [Store the phone PIN for unlock](BITWARDEN.md#store-the-phone-pin-for-unlock).
+
+Set the file path in the installed `relay.env`:
+
+```dotenv
+ATOMIC_RELAY_UNLOCK_PIN_FILE=<file>
+```
+
+Restart only the relay through your normal service procedure to load this setting. When set, the file is validated at startup; it is read again on every call, so replacing its contents privately does not require a restart. Unset configuration returns `unlock PIN not configured`; an unavailable or invalid file returns `unlock PIN unavailable`. No command-based PIN source is supported.
+
+Call the tool without a PIN:
+
+```sh
+tools/py.sh ../tools/call_tool.py android_unlock '{}'
+```
+
+Accessibility must be connected. Unlock supports a PIN only, not a pattern, password, fingerprint or face. Nothing runs before the first unlock after a reboot, so this tool cannot help then; unlock the phone locally first. A wrong PIN spends a real lockout attempt. Each call enters at most one sequence; do not repeat an uncertain result blindly. Unlock is tested on Pixel 8a running Android 16 (from doze, already unlocked, wrong PIN). The contributor reported unlock working on Samsung One UI 8 with a pre-release build; it has not been retested with 1.0.1.
+
+To disable remote unlock, remove the private PIN file. Calls then refuse without entering a PIN. Before restarting the relay, also remove `ATOMIC_RELAY_UNLOCK_PIN_FILE` from `relay.env`, because a configured missing file fails startup. This does not change the phone's screen lock or pairing.
+
 ## Update
 
-1. Keep your private signing backup and a usable rollback APK before updating. For the code-8 release, build the code-9 rollback from your prior release commit with `tools/build-rollback-apk.sh <PRIOR_RELEASE_COMMIT> 9`, using the same signing identity. For later updates, choose a rollback code higher than the update you might need to undo.
+1. Keep your private signing backup and a usable rollback APK before updating. For the code-10 release, build the code-11 rollback from the 1.0.0 release commit with `tools/build-rollback-apk.sh <PRIOR_RELEASE_COMMIT> 11`, using the same signing identity. The rollback source for this release is `6a8a6b7`. For later updates, choose a rollback code higher than the update you might need to undo.
 2. Obtain or build the new release APK. Install it over Atomic Bridge with the same key; do not uninstall or clear app data. A normal update preserves pairing.
 3. From the new source checkout, review `tools/py.sh ../tools/upgrade.py --dry-run`, then run `tools/py.sh ../tools/upgrade.py`. The script backs up the installed relay/plugin/configuration, updates the files and checks the relay. Keep its backup directory and printed rollback command private.
 4. Activate changed plugin files using your host's normal plugin-loading procedure. The upgrade script manages the relay's own service, and gateway lifecycle remains under the host's controls. Check `android_ping` again after the update.
@@ -124,7 +156,7 @@ tools/py.sh ../tools/upgrade.py --rollback --backup "<BACKUP_DIRECTORY>"
 
 Replace the placeholder with the upgrade's usable backup directory. Rollback restores that snapshot and checks it with the restored admin credential. Re-running an interrupted upgrade reuses its started backup; stop at a failed step and use its printed recovery command.
 
-Android refuses a lower version code. To roll the app back without losing its session, install the prepared higher-code rollback APK with the same signing key over the app. For this release, check the prepared rollback with `tools/check-release-apk.sh build/rollback/Atomic-rollback-<short-commit>-9.apk --version-code 9 --debuggable`. Re-pair only if you deliberately removed app data or need a new session.
+Android refuses a lower version code. To roll the app back without losing its session, install the prepared higher-code rollback APK with the same signing key over the app. For this release, check the prepared rollback with `tools/check-release-apk.sh build/rollback/Atomic-rollback-<short-commit>-11.apk --version-code 11 --debuggable`, replacing `<short-commit>` with the rollback source's short commit. Re-pair only if you deliberately removed app data or need a new session.
 
 ## Uninstall
 
@@ -140,7 +172,7 @@ After it is unloaded, remove `~/Library/LaunchAgents/com.atomic.bridge-relay.pli
 
 The relay log is `~/services/atomic-bridge/logs/relay.log`; `ATOMIC_RELAY_LOG_LEVEL=DEBUG` enables extra diagnostics. Phone logs use the `AtomicLink` tag. Keep codes, links, credentials, screen/contact/message content, filenames, files, audio and images out of logs and support reports. See the [Mac guide](../mac/README.md) for log rotation and notification/media boundaries.
 
-- Use a dedicated phone with None or Swipe screen lock. Reads can work with the display off; screenshots wake it. **Kill link** keeps connection and control off across restarts until **Turn link back on** is tapped.
+- Use a dedicated phone with None, Swipe, or a PIN and the relay-side unlock. With None or Swipe, reads can work with the display off; screenshots wake it. **Kill link** keeps connection and control off across restarts until **Turn link back on** is tapped. Without the one-time grant, Android may keep accessibility enabled while the link stays off; the status screen says when screen control remains on.
 - There are no per-command prompts, app blocklists or timed leases. The pairing confirmation protects pairing only. Accessibility can inspect sensitive views wherever Android exposes them.
 - `android_open_app` reports `foreground_verified:true` only when its package was seen in front. A task covered by another app can return unverified success with a hint; inspect the screen before acting. An unconfirmed launch can return `timeout` after five seconds.
 - Searches cover only the accessibility tree and stop at 20,000 nodes or 20 seconds. Check `truncated` and `visited`; some pages expose no searchable text.

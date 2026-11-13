@@ -11,8 +11,7 @@ class ConnectionService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        (application as LinkApp).runtime.start()
-        return START_STICKY
+        return (application as LinkApp).runtime.onStartCommand()
     }
 
     override fun onDestroy() {

@@ -18,7 +18,7 @@ from recording_ctx import RecordingContext
 FIXTURE = Path(__file__).parent / "fixtures" / "android_tool_schemas_1.13.1.json"
 REPO = Path(__file__).resolve().parents[2]
 NEW_NAMES = ["android_notifications_recent", "android_wait_notification", "android_list_files",
-             "android_pull_file", "android_push_file", "android_call_audio_probe"]
+             "android_pull_file", "android_push_file", "android_call_audio_probe", "android_unlock"]
 
 
 def _handler(args: dict, **kwargs):
@@ -47,13 +47,13 @@ def test_register_uses_only_table_and_documented_context(monkeypatch):
 
 
 def test_shell_has_no_placeholder_handlers_or_import_registration():
-    assert len(registry.TOOL_ENTRIES) == 41
+    assert len(registry.TOOL_ENTRIES) == 42
     assert all(callable(entry.handler) for entry in registry.TOOL_ENTRIES)
     assert callable(importlib.reload(atomic_bridge).register)
     ctx = RecordingContext()
     assert ctx.tools == []
     atomic_bridge.register(ctx)
-    assert len(ctx.tools) == 41
+    assert len(ctx.tools) == 42
     assert [tool["name"] for tool in ctx.tools] == [entry.name for entry in registry.TOOL_ENTRIES]
 
 
@@ -128,7 +128,7 @@ def test_operator_fixtures_work_without_private_cutover_files(tmp_path, monkeypa
     listing, doctor = ops_cases.fixture_outputs(layout, variant)
     rows = json.loads(listing)
     assert any(row["name"] == "atomic-bridge" for row in rows)
-    assert "41 tool(s), 0 hook(s)" in doctor
+    assert "42 tool(s), 0 hook(s)" in doctor
     assert "@PLUGIN_DIR@" not in doctor
 
 

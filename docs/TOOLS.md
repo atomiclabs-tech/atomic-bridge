@@ -1,6 +1,6 @@
 # Tools
 
-Atomic Bridge registers 41 tools. Each line below uses the tool schema description; arguments are defined in the plugin schemas. Start with the [operator guide](OPERATOR.md) and keep tool results private.
+Atomic Bridge registers 42 tools. Each line below uses the tool schema description; arguments are defined in the plugin schemas. Start with the [operator guide](OPERATOR.md) and keep tool results private.
 
 ## Screen
 
@@ -24,6 +24,7 @@ Atomic Bridge registers 41 tools. Each line below uses the tool schema descripti
 - `android_drag` — Drag between screen coordinates on Atomic Bridge. Duration is clamped to 100 to 3000 ms. Optionally hold at the start point before moving.
 - `android_scroll` — Scroll the Atomic Bridge screen or a selected scrollable node.
 - `android_press_key` — Press a supported hardware or software key on Atomic Bridge.
+- `android_unlock` — Unlock the Atomic Bridge phone's PIN lock screen using the PIN file configured on the relay Mac; the PIN is never passed as an argument. One attempt per call.
 - `android_clipboard_read` — Read the current plain-text clipboard on Atomic Bridge.
 - `android_clipboard_write` — Write plain text to the clipboard on Atomic Bridge.
 

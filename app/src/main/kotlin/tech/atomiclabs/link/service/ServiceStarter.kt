@@ -25,7 +25,6 @@ class ServiceStarter(
     companion object {
         fun start(context: Context) {
             val app = context.applicationContext as LinkApp
-            if (app.killSwitch.isKilled()) return
             app.runtime.requestStart()
         }
     }
@@ -37,11 +36,12 @@ internal class ConnectionServiceLifetime(
     private val power: PowerManager,
     private val logger: Logger,
     private val availability: (Service?) -> Unit,
-    private val startRuntime: () -> Unit,
+    private val startRuntime: () -> Boolean,
 ) {
     private var lock: PowerManager.WakeLock? = null
 
     fun created(service: Service) {
+        var stopRequested = false
         try {
             check(lock == null) { "The connection service is already created." }
             val running = notification.build()
@@ -54,6 +54,7 @@ internal class ConnectionServiceLifetime(
                 // End the unpromoted start before Android's foreground-service deadline; Runtime owns the connection.
                 availability(null)
                 service.stopSelf()
+                stopRequested = true
                 return
             }
             val acquired = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AtomicLink:running")
@@ -68,7 +69,13 @@ internal class ConnectionServiceLifetime(
             try { destroyed() }
             catch (cleanup: Exception) { cause.addSuppressed(cleanup) }
             throw IllegalStateException("The connection service could not start.", cause)
-        } finally { startRuntime() }
+        } finally {
+            if (!startRuntime()) {
+                logger.warn("ConnectionService", "create", "state=killed")
+                try { destroyed() }
+                finally { if (!stopRequested) service.stopSelf() }
+            }
+        }
     }
 
     fun destroyed() {

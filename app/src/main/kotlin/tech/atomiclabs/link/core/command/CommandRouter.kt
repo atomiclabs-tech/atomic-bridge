@@ -49,6 +49,8 @@ class CommandRouter(
         } catch (cause: BadRequestException) {
             logger.error("CommandRouter", "parameters", context, FailureDiagnostics.sanitized(cause))
             CommandResult.Failure(ErrorCode.BAD_REQUEST, cause.message!!).toJson()
+        } catch (cause: InterruptedCommandException) {
+            cause.result.toJson()
         } catch (cause: TimeoutCancellationException) {
             logger.error("CommandRouter", "deadline", context, FailureDiagnostics.sanitized(cause))
             CommandResult.Failure(ErrorCode.TIMEOUT, "The command exceeded its deadline.").toJson()
@@ -62,7 +64,7 @@ class CommandRouter(
     private suspend fun execute(route: Route?, body: BodyParams, context: String): CommandResult {
         if (route == null) return CommandResult.Failure(ErrorCode.UNKNOWN_COMMAND, "The command path or method is unknown.")
         val needs = route.needs(body)
-        if (needs.display) return display.withLock { checkedHandle(route, body, needs, context) }
+        if (needs.display || needs.exclusive) return display.withLock { checkedHandle(route, body, needs, context) }
         return checkedHandle(route, body, needs, context)
     }
 

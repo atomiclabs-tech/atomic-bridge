@@ -41,6 +41,17 @@ class KeyCommandsTest {
         assertEquals(0, f.gate.calls)
     }
 
+    @Test fun powerAndVolumeShareInputOwnershipWithoutAddingDisplayPreconditions() = runTest {
+        val f = InputFixture(testScheduler)
+        val keys = f.keys
+        for (name in listOf("power", "volume_up", "volume_down")) {
+            val needs = keys.needs(BodyParams(buildJsonObject { put("key", name) }))
+            assertTrue(needs.exclusive)
+            assertFalse(needs.display)
+            assertEquals(name == "power", needs.accessibility)
+        }
+    }
+
     @Test fun searchAndUnknownKeysListSupportedKeysAndFailedWakeCannotSucceed() = runTest {
         val f = InputFixture(testScheduler)
         for (key in listOf("search", "unknown")) {

@@ -185,7 +185,7 @@ def test_stored_fixture_session_reconnects_without_pairing_and_health_is_dynamic
             session = app[RUNTIME].sessions.list_sessions()[0]
             phone = await FakePhone.connect(client, session_payload(session), path="/")
             auth = phone.auth["payload"]
-            matches = auth == {"session_token": session.token, "server_version": "2.3.0", "profiles": [],
+            matches = auth == {"session_token": session.token, "server_version": "2.4.0", "profiles": [],
                             "expires_at": None, "grants": {name: None for name in session.grants},
                             "transport_hint": "wss", "client_surface": "android", "device_form_factor": "phone"}
             assert matches

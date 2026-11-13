@@ -59,4 +59,9 @@ SCHEMAS = {
             "inject": {"type": "boolean", "default": True}, "device": _DEVICE,
         }, "required": []},
     },
+    "android_unlock": {
+        "name": "android_unlock",
+        "description": "Unlock the Atomic Bridge phone's PIN lock screen using the PIN file configured on the relay Mac; the PIN is never passed as an argument. One attempt per call.",
+        "parameters": {"type": "object", "properties": {"device": _DEVICE}, "required": []},
+    },
 }

@@ -13,6 +13,7 @@ from atomic_relay import __version__
 from atomic_relay.config_network import parse_hosts, parse_phone_url
 from atomic_relay.notifications.filter import validate_patterns
 from atomic_relay.sessions.admin import AdminCredential, AdminSecretError
+from atomic_relay.sessions.unlock_pin import UnlockPin, UnlockPinError
 
 DEFAULTS = {
     "ATOMIC_RELAY_HOST": "127.0.0.1",
@@ -20,6 +21,7 @@ DEFAULTS = {
     "ATOMIC_RELAY_PORT": "8767",
     "ATOMIC_RELAY_SESSIONS_FILE": "~/.hermes/hermes-relay-sessions.json",
     "ATOMIC_RELAY_ADMIN_SECRET_FILE": "~/services/atomic-bridge/admin.secret",
+    "ATOMIC_RELAY_UNLOCK_PIN_FILE": "",
     "ATOMIC_RELAY_TRUSTED_PROXIES": "",
     "ATOMIC_RELAY_NOTIFY_ALLOW": "",
     "ATOMIC_RELAY_NOTIFY_DENY": "",
@@ -52,6 +54,7 @@ class Config:
     server_version: str
     sessions_count: int
     admin_secret: AdminCredential
+    unlock_pin_file: Path | None
     trusted_proxies: frozenset[str]
     notification_allow: tuple[str, ...]
     notification_deny: tuple[str, ...]
@@ -131,6 +134,17 @@ def _trusted_proxies(value: str) -> frozenset[str]:
         raise ConfigError("component=config operation=parse ATOMIC_RELAY_TRUSTED_PROXIES must contain IP addresses") from error
 
 
+def _unlock_pin_file(settings: Mapping[str, str]) -> Path | None:
+    if not settings["ATOMIC_RELAY_UNLOCK_PIN_FILE"]:
+        return None
+    path = _path(settings, "ATOMIC_RELAY_UNLOCK_PIN_FILE")
+    try:
+        UnlockPin.load(path)
+    except UnlockPinError as error:
+        raise ConfigError(f"component=config operation=unlock-pin {error}") from error
+    return path
+
+
 def _notification_patterns(value: str, key: str) -> tuple[str, ...]:
     patterns = tuple(item.strip() for item in value.split(",")) if value.strip() else ()
     try:
@@ -177,6 +191,7 @@ def load_config(env_file: Path | None = None, *, environ: Mapping[str, str] | No
         media_allowed_roots=tuple(Path(root).expanduser().absolute() for root in roots),
         server_version=settings["ATOMIC_RELAY_SERVER_VERSION"], sessions_count=_session_count(sessions),
         admin_secret=_admin_secret(settings),
+        unlock_pin_file=_unlock_pin_file(settings),
         trusted_proxies=_trusted_proxies(settings["ATOMIC_RELAY_TRUSTED_PROXIES"]),
         notification_allow=_notification_patterns(settings["ATOMIC_RELAY_NOTIFY_ALLOW"], "ATOMIC_RELAY_NOTIFY_ALLOW"),
         notification_deny=_notification_patterns(settings["ATOMIC_RELAY_NOTIFY_DENY"], "ATOMIC_RELAY_NOTIFY_DENY"),

@@ -228,9 +228,9 @@ def test_preflight_accepts_uv_python_symlink_and_closing_steps_stay_operator_own
                      "tools/check-release-apk.sh", "tools/build.sh :app:assembleRelease"):
         assert expected in text
     assert all(argv[0] not in {"adb", "hermes"} for argv, _ in runner.calls)
-    assert "tools/build-rollback-apk.sh b4dfab2 9" in text
-    assert "Atomic-rollback-b4dfab2-9.apk --version-code 9 --debuggable" in text
-    assert "app-release.apk --version-code 8" in text
+    assert "tools/build-rollback-apk.sh 6a8a6b7 11" in text
+    assert "Atomic-rollback-6a8a6b7-11.apk --version-code 11 --debuggable" in text
+    assert "app-release.apk --version-code 10" in text
 
 
 def test_abandoned_unpublished_staging_does_not_block_a_fresh_verified_backup(tmp_path):

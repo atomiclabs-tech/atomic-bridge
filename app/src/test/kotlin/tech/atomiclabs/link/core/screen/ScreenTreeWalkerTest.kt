@@ -19,6 +19,20 @@ class ScreenTreeWalkerTest {
         assertEquals(listOf("w7:0", "w8:0"), ScreenTreeWalker(FakeClock(testScheduler)).read(snapshot(node(), second)).nodes.map { it.nodeId })
     }
 
+    @Test fun containerInspectionIsOptInAndKeepsTheSameBoundedTraversal() = runTest {
+        val root = node(null)
+        root.properties = root.properties.copy(viewId = "container-marker")
+        root.nodes += node("child")
+        val walker = ScreenTreeWalker(FakeClock(testScheduler))
+        val ordinary = mutableListOf<UiNodeProperties>()
+        walker.visit(snapshot(root), MAX_SEARCH_VISITS) { ordinary += it.properties; true }
+        assertEquals(1, ordinary.size)
+        val all = mutableListOf<UiNodeProperties>()
+        val outcome = walker.visit(snapshot(root), 1, includeContainers = true) { all += it.properties; true }
+        assertEquals(VisitOutcome(1, true), outcome)
+        assertEquals("container-marker", all.single().viewId)
+    }
+
     @Test fun filteringDoesNotHideDescendantsAndRootBoundsAreTheUnionOfRealRoots() = runTest {
         val hidden = node("zero", bounds = Bounds(0, 0, 0, 0))
         hidden.nodes += node("child")

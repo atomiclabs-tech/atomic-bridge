@@ -30,7 +30,7 @@ def build_plan(layout=None, *, rollback=False):
         stop, start,
         Step("health", "Poll public /health for target version (60 s)", timeout=60),
         Step("phone", "Poll /bridge/devices with the admin credential (120 s)", timeout=120),
-        Step("operator", f"Watcher edit: mac/README.md; Operator, from a separate shell: {RESTART}; then build/check rollback APK code 9 before installing release APK code 8"),
+        Step("operator", f"Watcher edit: mac/README.md; Operator, from a separate shell: {RESTART}; then build/check rollback APK code 11 before installing release APK code 10"),
         Step("complete", "Mark the verified backup complete"),
     )
 

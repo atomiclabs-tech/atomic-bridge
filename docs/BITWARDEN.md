@@ -148,6 +148,36 @@ Item names are private too. Review this output locally and do not paste it into
 chat or shared logs. `--list` uses the same session ownership and cleanup rules.
 The helper never retries a phone action automatically.
 
+## Store the phone PIN for unlock
+
+Store the phone's lock-screen PIN in a vault item's password field. Use the
+[caller-owned `BW_SESSION` method](#caller-owned-session-with-bw_session)
+above in a trusted terminal, with tracing and terminal recording disabled.
+Retrieve it directly into a new private file outside git:
+
+```sh
+(umask 077; bw get password "<item>" > "<file>")
+```
+
+Replace only the item and file placeholders; never put the PIN or session in
+argv, chat, logs or tool output. `umask` does not tighten an existing file's
+permissions. Check that retrieval succeeded before configuring the file, and
+do not print its contents. Keep the file at mode `0600`.
+
+This direct CLI recipe uses `BW_SESSION` from the environment; it does not
+invoke `ATOMIC_BW_SESSION_CMD`. That setting remains the helper's session
+method, with a nonempty caller-owned `BW_SESSION` taking precedence and only
+helper-owned sessions locked by the helper. After this recipe, lock the vault
+and unset `BW_SESSION` as shown above, including after retrieval fails.
+
+Follow [Unlock with a PIN](OPERATOR.md#unlock-with-a-pin) to set
+`ATOMIC_RELAY_UNLOCK_PIN_FILE` in `relay.env` and call `android_unlock` without
+a PIN argument. The relay reads this file on each call; it never invokes a
+vault command. The PIN never passes through the agent. Remove the private
+file and its relay setting when remote unlock is no longer needed.
+Use unlock only over Tailscale or loopback: `ws://` carries the PIN in
+cleartext, and Tailscale encrypts that transport.
+
 ## Troubleshooting
 
 - **CLI missing or wrong profile:** install `bw` or set `BW` to its executable.

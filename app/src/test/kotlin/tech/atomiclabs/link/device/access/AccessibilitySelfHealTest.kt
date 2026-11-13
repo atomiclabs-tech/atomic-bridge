@@ -10,6 +10,16 @@ class AccessibilitySelfHealTest {
     private var stored: String? = null
     private var master = false
 
+    @Test fun isOnReadsTheCurrentEnabledListWithoutCheckingTheGrantOrWriting() {
+        val reader = AccessibilitySelfHeal(logger, { error("A read must not require the grant.") }, { stored },
+            { error("A read must not write enabled services.") }, { error("A read must not write the master setting.") }, me)
+        assertFalse(reader.isOn())
+        stored = "other.pkg/other.Svc:tech.atomiclabs.link/.device.access.LinkAccessibilityService"
+        assertTrue(reader.isOn())
+        stored = "other.pkg/other.Svc"
+        assertFalse(reader.isOn())
+    }
+
     private fun heal(granted: Boolean, writeOk: Boolean = true) = AccessibilitySelfHeal(
         logger, { granted }, { stored },
         { stored = it; writeOk }, { master = true; true }, me,

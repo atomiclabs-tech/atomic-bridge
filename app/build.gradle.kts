@@ -21,7 +21,7 @@ fun signingValue(name: String): String = requireNotNull(signingProperties.getPro
 
 val appLabel = providers.gradleProperty("atomic.appLabel").orElse("Atomic Bridge")
 val launcherLabel = providers.gradleProperty("atomic.launcherLabel").orElse("Bridge")
-val appVersionCode = providers.gradleProperty("atomic.versionCode").orElse("8").get().let { value ->
+val appVersionCode = providers.gradleProperty("atomic.versionCode").orElse("10").get().let { value ->
     requireNotNull(value.toIntOrNull()) { "atomic.versionCode must be an integer." }
 }
 
@@ -34,7 +34,7 @@ android {
         minSdk = 34
         targetSdk = 36
         versionCode = appVersionCode
-        versionName = "1.0.0"
+        versionName = "1.0.1"
         resValue("string", "app_name", appLabel.get())
         resValue("string", "launcher_name", launcherLabel.get())
         resValue("string", "notification_listener_description_static", "Lets ${appLabel.get()} read notifications on this device.")

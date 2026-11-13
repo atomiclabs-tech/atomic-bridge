@@ -20,9 +20,9 @@ class LinkApp : Application(), StatusViewBinder.Factory {
                 android.os.Process.killProcess(android.os.Process.myPid())
             },
             startLink = { ServiceStarter.start(this) })
-        val killed = killSwitch.onProcessStart()
+        killSwitch.onProcessStart()
         runtime = LinkRuntime(this)
-        if (!killed) ServiceStarter.start(this)
+        ServiceStarter.start(this)
     }
 
     override fun create(activity: Activity) = runtime.create(activity, killSwitch) {

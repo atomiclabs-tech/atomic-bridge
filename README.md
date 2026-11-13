@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Android 14+ app &nbsp;·&nbsp; Mac relay &nbsp;·&nbsp; Hermes plugin with 41 tools &nbsp;·&nbsp; MIT
+  Android 14+ app &nbsp;·&nbsp; Mac relay &nbsp;·&nbsp; Hermes plugin with 42 tools &nbsp;·&nbsp; MIT
 </p>
 
 ---
@@ -44,7 +44,7 @@ Put a spare Android phone on a charger. Install the **Atomic Bridge** app and pa
 
 ```text
  Your agent ──► atomic-bridge plugin ──► relay on your Mac ──► Atomic Bridge app on the phone
- (Hermes, or     (41 android_* tools)     (Python 3.12,           (accessibility service,
+ (Hermes, or     (42 android_* tools)     (Python 3.12,           (accessibility service,
   anything that                            aiohttp, port 8767)     foreground service)
   speaks HTTP)
 ```
@@ -72,14 +72,14 @@ The [operator guide](docs/OPERATOR.md) explains setup and operating limits. The 
 
 ## Works with the agent you already have
 
-- **Hermes:** a native plugin. Enable it and your agent gets 41 `android_*` tools.
+- **Hermes:** a native plugin. Enable it and your agent gets 42 `android_*` tools.
 - **Claude Code, Codex, your own scripts on that Mac:** use the local HTTP API with the admin credential, or the bundled helper. A phone session token cannot authorize control routes.
 
 ```sh
 tools/py.sh ../tools/call_tool.py android_ping '{}'
 ```
 
-Atomic Bridge 1.0.0: app 1.0.0 (code 8), relay 2.3.0, plugin 2.3.0.
+Atomic Bridge 1.0.1: app 1.0.1 (code 10), relay 2.4.0, plugin 2.4.0.
 
 ## How to
 
@@ -97,7 +97,8 @@ Tailscale is optional and recommended for an encrypted connection from any netwo
 
 - **Mac:** macOS 14 or newer, Python 3.12 and `uv`. The offline setup helpers need Python and the pinned packages in the local cache; prepare that cache before running them. The relay uses aiohttp; the plugin uses the Python standard library.
 - **Building the APK:** JDK 21, Android SDK platform 37 and a prepared Gradle cache. The wrapper and [build instructions](docs/OPERATOR.md#build-or-obtain-the-apk) select the pinned toolchain.
-- **Phone:** Android 14 or newer, kept charged and dedicated to this use. Pixel 8a is the tested device. Screen lock must be None or Swipe.
+- **Phone:** Android 14 or newer, kept charged and dedicated to this use.
+- **Screen lock:** None, Swipe, or a PIN with the relay-side unlock. See [unlock setup](docs/OPERATOR.md#unlock-with-a-pin).
 - **Agent:** Hermes Agent on the relay Mac for the plugin; another local caller can use the HTTP API or helper.
 - **Network:** Tailscale is optional and recommended. With Tailscale on the Mac and phone, the phone reaches the relay from home Wi-Fi, other Wi-Fi or cellular; Tailscale encrypts the link.
 - **Optional:** the Bitwarden CLI for private secret entry.
@@ -108,7 +109,7 @@ Tailscale is optional and recommended for an encrypted connection from any netwo
 - Other remote setups through your own HTTPS reverse proxy or tunnel are possible because the app accepts any `wss://` address. They expose the relay to the internet and are not guided or supported in v1.
 - Control depends on Android accessibility. Content omitted from the accessibility tree, including some web pages and custom views, cannot be found as text. Secure windows can refuse screenshots.
 - No root or privileged system control, and no live call audio. The call-audio tool is a diagnostic probe.
-- A PIN, password or biometric screen lock cannot be unlocked remotely; use None or Swipe on a dedicated phone.
+- Remote unlock supports a PIN only, not a pattern, password, fingerprint or face. Nothing runs before the first unlock after a reboot, so `android_unlock` cannot help there. A wrong PIN spends a real lockout attempt. Unlock is tested on Pixel 8a running Android 16 (from doze, already unlocked, wrong PIN). The contributor reported unlock working on Samsung One UI 8 with a pre-release build; it has not been retested with 1.0.1.
 - Sharing and MMS use Android's compose flow. A person completes Send.
 - Only macOS is tested for the relay and plugin. The phone app supports Android; it does not control iPhones.
 
@@ -118,9 +119,9 @@ Atomic Bridge is powerful because it gets out of the way. That cuts both ways, s
 
 - **Use a dedicated phone.** There are no per-command confirmation prompts and no app blocklist. Your agent can tap anything, including "Delete." Don't use the phone that holds your bank and your life.
 - **The admin secret is full control.** A local process that can read it can control the paired phone. An untrusted tool or prompt that convinces your agent to act has the agent's reach. Protect the Mac account and credential; keep secrets and phone content out of chat, logs and git. Phone session tokens authorize only the phone WebSocket and media upload/download, not agent commands.
-- **Screen lock must be None or Swipe.** A PIN can't be entered remotely.
+- **PIN unlock uses a private file on the Mac.** The relay reads it for each `android_unlock` call; the PIN never passes through the agent, chat, shell process arguments or tool output. Use unlock only over Tailscale or loopback: `ws://` sends the PIN in cleartext, and Tailscale encrypts that transport. Keep the file private and follow the [unlock setup](docs/OPERATOR.md#unlock-with-a-pin).
 - With None or Swipe screen lock, reads work without waking display; screenshots wake it.
-- **Always back on, with one kill switch.** Crashes, reboots and even a Settings force stop bring the link back by itself. The one-time `WRITE_SECURE_SETTINGS` grant lets accessibility restore itself too. Tap **Kill link** in the app and it stays dark, even after a reboot, until **Turn link back on** is tapped.
+- **Always back on, with one kill switch.** Crashes, reboots and even a Settings force stop bring the link back by itself. The one-time `WRITE_SECURE_SETTINGS` grant lets accessibility restore itself too. Tap **Kill link** in the app and the link stays off, even after a reboot, until **Turn link back on** is tapped. Without the grant, Android may keep accessibility enabled, but the link stays off; the status screen explains when screen control remains on.
 - **Full accessibility access.** Atomic Bridge declares `android:isAccessibilityTool="true"` and `android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagReportViewIds"`. It can inspect sensitive views, including banking apps where Android exposes them, and perform gestures. Secure-window screenshot restrictions do not make the rest of the phone safe from an authorized caller.
 - **Notifications reach the relay first.** With Notification access, the phone streams posted and removed events to the Mac. `ATOMIC_RELAY_NOTIFY_ALLOW` and `ATOMIC_RELAY_NOTIFY_DENY` filter relay buffering and publication, with deny taking precedence. They do not prevent notification contents travelling from the phone to the relay.
 - **Keep control local and protect the phone connection.** The agent and plugin run on the relay Mac. Keep a loopback listener and add only the explicit address literals needed for the phone; wildcard binds are refused. Tailscale encrypts traffic between your devices; a home-network link without it is unencrypted. The app refuses unencrypted addresses outside private networks. The relay listens only on explicit addresses, requires loopback and refuses wildcard listeners, rather than listening on all networks at once. Never expose local administration or control. Keep `admin.secret` a private regular file with mode `0600` and at least 32 characters. See the [Mac guide](mac/README.md) for setup and credential rotation.

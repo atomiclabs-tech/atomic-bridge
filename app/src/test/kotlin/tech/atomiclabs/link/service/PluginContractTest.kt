@@ -23,6 +23,9 @@ class PluginContractTest {
     private val fileBytes = byteArrayOf(1, 2, 3)
     private fun checksum(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes)
         .joinToString("") { "%02x".format(it.toInt() and 255) }
+    private fun unlockBody() = buildJsonObject {
+        put("pin", buildString { repeat(6) { append(('0'.code + kotlin.random.Random.nextInt(10)).toChar()) } })
+    }.toString()
     // Payloads read from installed plugin 1.13.1 tools/android_tool.py; host-only setup/macro are excluded.
     private val tools = listOf(
         Tool("android_ping", "GET", "/ping"),
@@ -62,6 +65,7 @@ class PluginContractTest {
         Tool("android_pull_file", "POST", "/files/pull", """{"path":"Download/fixture.bin"}"""),
         Tool("android_push_file", "POST", "/files/push", """{"media":"MEDIA:hermes-relay://fixture-media","name":"fixture.bin","dir":"Pictures","size":3,"sha256":"${checksum(fileBytes)}","overwrite":true}"""),
         Tool("android_call_audio_probe", "POST", "/call_audio_probe", """{"duration_ms":1000,"speaker":"off","inject":false,"sources":["MIC"]}"""),
+        Tool("android_unlock", "POST", "/unlock", unlockBody(), true),
     )
     private val ownedScopes = mutableListOf<CoroutineScope>()
     @After fun cleanup() { ownedScopes.forEach { it.cancel() } }
@@ -127,11 +131,11 @@ class PluginContractTest {
             send(Tool("fixture", "POST", path, body), id)
     }
 
-    @Test fun all33LegacyAndFourNewPhoneBackedPluginCallsUseTheProductionComposedRouter() = runTest {
+    @Test fun all34LegacyAndFourNewPhoneBackedPluginCallsUseTheProductionComposedRouter() = runTest {
         val fixture = Fixture(testScheduler)
-        assertEquals(37, tools.size)
-        assertEquals(37, tools.map { it.name }.toSet().size)
-        assertEquals(33, tools.count { it.path !in setOf("/files", "/files/pull", "/files/push", "/call_audio_probe") })
+        assertEquals(38, tools.size)
+        assertEquals(38, tools.map { it.name }.toSet().size)
+        assertEquals(34, tools.count { it.path !in setOf("/files", "/files/pull", "/files/push", "/call_audio_probe") })
         assertFalse(tools.any { it.name in setOf("android_setup", "android_macro") })
         for (tool in tools) {
             val response = fixture.send(tool)
@@ -215,6 +219,8 @@ class PluginContractTest {
         fixture.send(toggle, id = "stream-id")
         val event = mockk<AccessibilityEvent>()
         every { event.eventType } returns AccessibilityEvent.TYPE_VIEW_CLICKED
+        every { event.eventTime } returns fixture.inputs.clock.monotonicMs()
+        every { event.isPassword } returns false
         every { event.packageName } returns "fixture.app"
         every { event.className } returns "Fixture"
         every { event.text } returns mutableListOf("private event")

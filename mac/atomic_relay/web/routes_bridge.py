@@ -18,25 +18,25 @@ POST_PATHS = ("/tap /tap_text /long_press /type /swipe /drag /open_app /return_t
               "/events/stream /search_contacts /call /send_sms /share_media /send_mms /files/pull /files/push /call_audio_probe").split()
 
 
-def _selector(values):
+def extract_selector(values):
     choices = [values.pop(key, None) for key in SELECTORS]
     return next((value for value in choices if value), None)
 
 
-def _error(error):
+def error_response(error):
     log_failure(logger, error, "component=bridge operation=request refused")
     return web.json_response({"error": str(error)}, status=error.status_code)
 
 
 async def command(request):
     params = dict(request.query)
-    selector = _selector(params)
+    selector = extract_selector(params)
     try:
         body = await request.json() if request.method == "POST" else dict(params)
         if not isinstance(body, dict):
             raise ValueError("command body must be an object")
         body = dict(body)
-        body_selector = _selector(body)
+        body_selector = extract_selector(body)
         if selector is None:
             selector = body_selector
         if selector is not None and not isinstance(selector, str):
@@ -47,7 +47,7 @@ async def command(request):
     try:
         response = await request.app[RUNTIME].dispatch.command(request.method, request.path, params, body, selector)
     except BridgeError as error:
-        return _error(error)
+        return error_response(error)
     return web.json_response(response["result"], status=response["status"])
 
 
@@ -56,14 +56,14 @@ async def devices(request):
 
 
 async def status(request):
-    selector = _selector(dict(request.query))
+    selector = extract_selector(dict(request.query))
     try:
         payload = request.app[RUNTIME].registry.status_payload(selector)
     except BridgeError as error:
         if error.status_code == 503:
             return web.json_response({"phone_connected": False, "last_seen_seconds_ago": None,
                                       "error": "no phone connected"}, status=503)
-        return _error(error)
+        return error_response(error)
     return web.json_response(payload)
 
 
@@ -72,7 +72,7 @@ async def select_active(request):
         body = await request.json() if request.body_exists else {}
         if not isinstance(body, dict):
             raise ValueError("body must be an object")
-        selector = _selector(dict(body))
+        selector = extract_selector(dict(body))
         if not isinstance(selector, str) or not selector.strip():
             raise ValueError("device selector required")
     except ValueError as error:
@@ -81,7 +81,7 @@ async def select_active(request):
     try:
         return web.json_response(request.app[RUNTIME].registry.select_active(selector))
     except BridgeError as error:
-        return _error(error)
+        return error_response(error)
 
 
 def add_routes(app):
